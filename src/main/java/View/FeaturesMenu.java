@@ -12,7 +12,7 @@ public class FeaturesMenu {
         this.scanner = scanner;
     }
 
-    public void displayMenu() {
+    public void displayMenu() throws Exception{
         while (true) {
             printer.printTitle("Main Menu");
             printer.printString("1. Process SQL Queries");

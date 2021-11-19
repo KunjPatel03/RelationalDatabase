@@ -1,5 +1,6 @@
 package View;
 
+import Controller.ProcessQuery;
 import View.printer.Printer;
 
 import java.util.Scanner;
@@ -7,12 +8,13 @@ import java.util.Scanner;
 public class ProcessQueriesView {
     private Printer printer;
     private Scanner scanner;
+    private ProcessQuery processQuery = new ProcessQuery();
     ProcessQueriesView(Scanner scanner, Printer print){
         this.printer = print;
         this.scanner = scanner;
     }
 
-    public void displayMenu() {
+    public void displayMenu() throws Exception {
         while (true) {
             printer.printTitle("Process SQL Queries");
             printer.printString("1. Execute Query");
@@ -22,6 +24,7 @@ public class ProcessQueriesView {
                 case "1":
                     printer.printString("Enter your SQL Query:");
                     String query = scanner.nextLine();
+                    printer.printString(processQuery.processorQuery(query));
                     break;
                 case "2": return;
             }

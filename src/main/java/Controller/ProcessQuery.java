@@ -42,7 +42,10 @@ public class ProcessQuery {
             "VALUES\\s\\(\\\"?[a-zA-Z\\d\\s~`!@#$^&*-_+=|':;.,?]+\\\"?" +
                     "(,\\s\\\"?[a-zA-Z\\d\\s~`!@#$^&*-_+=|':;.,?]+\\\"?)*\\)";
 
-
+    public static final String SELECT_QUERY =
+            "select";
+    public static final String SELECT_QUERY_SYNTAX =
+            "^(?i)(SELECT\\s[a-zA-Z\\d]+(,\\s[a-zA-Z\\d]+)*\\sFROM\\s[a-zA-Z\\d]+;)$";
     public String processorQuery(String query) throws Exception {
         String returnMessage = null;
         if(isQueryValid(query)){
@@ -57,6 +60,9 @@ public class ProcessQuery {
             }
             else if (Pattern.matches(INSERT_QUERY_SYNTAX, query)){
                 returnMessage = executeInsertQuery(query);
+            }
+            else if (Pattern.matches(SELECT_QUERY_SYNTAX, query)){
+                returnMessage = executeSelectQuery(query);
             }
         }else{
             throw new Exception("Invalid query !!!!");
@@ -81,6 +87,11 @@ public class ProcessQuery {
         }
         else if(Query.contains(INSERT_QUERY)){
             if(!Pattern.matches(INSERT_QUERY_SYNTAX, Query)){
+                throw new Exception("Invalid insert query !!!!");
+            }
+        }
+        else if(Query.contains(SELECT_QUERY)){
+            if(!Pattern.matches(SELECT_QUERY_SYNTAX, Query)){
                 throw new Exception("Invalid insert query !!!!");
             }
         }
@@ -161,7 +172,6 @@ public class ProcessQuery {
     }
 
     private String executeInsertQuery(String query) throws Exception {
-
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
 //        System.out.println(tableName);
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
@@ -233,5 +243,52 @@ public class ProcessQuery {
             }
         }
         return "RECORD HAS BEEN INSERTED SUCCESSFULLY !!!";
+    }
+
+    private String executeSelectQuery(String query) throws Exception {
+        String[] queryArray = query.substring(0,query.length()-1).split(" ");
+        String tableName = queryArray[queryArray.length-1];
+        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        File databasePath = new File(path);
+        if(!databasePath.isDirectory()){
+            throw new Exception("DATABASE doesn't exist");
+        }
+        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final File allTablesPath = new File(tablePath);
+        final File[] allTables = allTablesPath.listFiles();
+        boolean isTableExists = false;
+        for (final File table : allTables) {
+            if (table.getName().equalsIgnoreCase(tableName + ".txt")) {
+                isTableExists = true;
+            }
+        }
+        if (!isTableExists) {
+            throw new Exception("Table doesn't exists");
+        }
+        final String FullPath = tablePath + tableName + ".txt";
+        try (final FileReader fileReader = new FileReader(FullPath);
+             final BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            final StringBuilder stringBuilder = new StringBuilder();
+            boolean isHeading = true;
+            String content;
+            while ((content = bufferedReader.readLine()) != null) {
+                final String[] columns = content.split("\\$\\|\\|\\$");
+                stringBuilder.append("| ");
+                if (isHeading) {
+                    for (final String column : columns) {
+                        stringBuilder.append(column.split("\\(")[0]).append(" | ");
+                    }
+                    stringBuilder.append("\n");
+                    isHeading = false;
+                } else {
+                    for (final String column : columns) {
+                        stringBuilder.append(column).append(" | ");
+                    }
+                    stringBuilder.append("\n");
+                }
+            }
+            System.out.println(stringBuilder.toString());
+        }
+        return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
 }

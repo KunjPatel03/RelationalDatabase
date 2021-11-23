@@ -1,5 +1,8 @@
 package View;
 
+import Controller.User;
+import Controller.UserLogin;
+import Controller.UserSession;
 import View.printer.Printer;
 import java.util.Scanner;
 
@@ -7,6 +10,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
         Printer printer = new Printer();
         Scanner scanner = new Scanner(System.in);
+        UserSession userSession = UserSession.getInstance();
         while (true) {
             printer.printTitle("Welcome to RDBMS Project");
             printer.printString("1. User registration.");
@@ -16,14 +20,20 @@ public class Main {
             String input = scanner.nextLine();
             switch (input) {
                 case "1":
-                    System.out.println("selected 1");
+                    UserRegistrationView userRegistrationView = new UserRegistrationView(printer, scanner);
+                    userRegistrationView.newUserRegistration();
                     break;
                 case "2":
-                    FeaturesMenu featureMenu = new FeaturesMenu(scanner, printer);
-                    featureMenu.displayMenu();
+                    UserLogin userLogin = new UserLogin(printer, scanner);
+                    final User user = userLogin.performLogin();
+                    if(user!=null){
+                        userSession.newUserSession(user);
+                        FeaturesMenu featureMenu = new FeaturesMenu(scanner, printer);
+                        featureMenu.displayMenu();
+                    }
                     break;
                 case "3":
-                    System.out.println("selected 3");
+                    userSession.destroyUserSession();
                     System.exit(0);
                     break;
                 default:

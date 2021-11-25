@@ -11,25 +11,19 @@ import java.util.Scanner;
 public class ProcessQueriesView {
     private Printer printer;
     private Scanner scanner;
-    private static File file = new File("./src/main/java/Logs/QueryLogs.txt");
     private static FileWriter fileWriter;
+
     static {
         try {
-            fileWriter = new FileWriter(file);
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
+            fileWriter = new FileWriter("./src/main/java/Logs/QueryLogs.txt", true);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     private ProcessQuery processQuery = new ProcessQuery(fileWriter);
 
-    static  {
-        try {
-            fileWriter.close();
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
-    }
+
     ProcessQueriesView(Scanner scanner, Printer print) throws IOException {
         this.printer = print;
         this.scanner = scanner;
@@ -47,9 +41,14 @@ public class ProcessQueriesView {
                     String query = scanner.nextLine();
                     printer.printString(processQuery.processorQuery(query));
                     break;
-                case "2": return;
+                case "2":
+                    processQuery.closeFileWriter();
+                    return;
             }
         }
+
     }
+
+
 
 }

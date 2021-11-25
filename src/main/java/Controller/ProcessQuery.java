@@ -10,6 +10,8 @@ public class ProcessQuery {
 
     public static FileWriter fileWriter;
 
+    public ProcessQuery() {}
+
     public ProcessQuery(FileWriter fileWriter) throws IOException {
         this.fileWriter = fileWriter;
         fileWriter.write("QUERY PROCESSOR INVOKED/STARTED AT "+ new Timestamp(System.currentTimeMillis())+"\n");
@@ -88,6 +90,8 @@ public class ProcessQuery {
    public static final String DROP_STATEMENT = "DROP ";
 
    public static final String EXECUTED = "EXECUTED AT ";
+
+   public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
 
     public String processorQuery(String query) throws Exception {
         String returnMessage = null;
@@ -609,5 +613,15 @@ public class ProcessQuery {
             throw new Exception("Table doesn't exists");
         }
         return "TABLE HAS BEEN DROPPED SUCCESSFULLY!!!";
+    }
+
+
+    public void closeFileWriter()  {
+        try {
+            fileWriter.write(PROGRAM_EXIT+new Timestamp(System.currentTimeMillis())+"\n");
+            fileWriter.close();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 }

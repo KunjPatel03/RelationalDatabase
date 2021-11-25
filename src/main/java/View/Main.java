@@ -30,6 +30,8 @@ public class Main {
                         userSession.newUserSession(user);
                         FeaturesMenu featureMenu = new FeaturesMenu(scanner, printer);
                         featureMenu.displayMenu();
+                    }else{
+                        printer.printString("Invalid credentials");
                     }
                     break;
                 case "3":

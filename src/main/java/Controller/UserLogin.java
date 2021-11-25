@@ -22,10 +22,10 @@ public class UserLogin {
     }
 
     public User performLogin() {
-        this.print.printString("Enter username/email");
+        System.out.println("Enter username");
         final String user = scanner.nextLine();
 
-        this.print.printString("Enter password");
+        System.out.println("Enter password");
         final String password = scanner.nextLine();
 
         final Questions securityQuestion = Questions.getInstance();
@@ -67,8 +67,6 @@ public class UserLogin {
                     securityQ3Ans = userDetailsArr[5];
                     securityQ4Ans = userDetailsArr[6];
                     break;
-                }else{
-                    throw new Exception("Invalid Credentials !!!!");
                 }
             }
         }catch(Exception e){

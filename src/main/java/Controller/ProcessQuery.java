@@ -1,11 +1,21 @@
 package Controller;
 
 import java.io.*;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProcessQuery {
+
+    public static FileWriter fileWriter;
+
+    public ProcessQuery() {}
+
+    public ProcessQuery(FileWriter fileWriter) throws IOException {
+        this.fileWriter = fileWriter;
+        fileWriter.write("QUERY PROCESSOR INVOKED/STARTED AT "+ new Timestamp(System.currentTimeMillis())+"\n");
+    }
     public static final String CREATE_DATABASE_QUERY =
             "create database";
     public static final String CREATE_DATABASE_QUERY_STRING =
@@ -60,6 +70,28 @@ public class ProcessQuery {
            "delete";
    public static final String DELETEWITHCONDITION_QUERY_SYNTAX=
            "^(?i)(DELETE\\s.*FROM\\s.*WHERE\\s.*)$";
+
+   public static final String CREATE_DATABASE = "CREATE DATABASE ";
+
+   public static final String USE_DATABASE = "USE DATABASE ";
+
+   public static final String CREATE_TABLE = "CREATE TABLE ";
+
+   public static final String INSERT_INTO = "INSERTING VALUES ";
+
+   public static final String SELECT_STATEMENT = "SELECT ";
+
+   public static final String UPDATE_STATEMENT = "UPDATE ";
+
+   public static final String TRUNCATE_STATEMENT = "TRUNCATE ";
+
+   public static final String DELETE_STATEMENT = "DELETE ";
+
+   public static final String DROP_STATEMENT = "DROP ";
+
+   public static final String EXECUTED = "EXECUTED AT ";
+
+   public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
 
     public String processorQuery(String query) throws Exception {
         String returnMessage = null;
@@ -142,7 +174,8 @@ public class ProcessQuery {
 
         return true;
     }
-    private String executeCreateDatabaseQuery(String query){
+    private String executeCreateDatabaseQuery(String query) throws IOException {
+        fileWriter.write(CREATE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
         System.out.println(dbName);
         String path ="./src/main/java/Model/database/"+ dbName;
@@ -151,7 +184,8 @@ public class ProcessQuery {
         return "CREATED DB SUCCESSFULLY !!!";
     }
 
-    private String executeUseDatabaseQuery(String query){
+    private String executeUseDatabaseQuery(String query) throws IOException {
+        fileWriter.write(USE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
         final File[] files = new File("./src/main/java/Model/database/").listFiles();
         for (final File file : files) {
@@ -162,6 +196,7 @@ public class ProcessQuery {
         return this.useDatabaseName+ " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
     private String executeCreateTableQuery(String query) throws Exception {
+        fileWriter.write(CREATE_TABLE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
         File databasePath = new File(path);
@@ -217,6 +252,7 @@ public class ProcessQuery {
     }
 
     private String executeInsertQuery(String query) throws Exception {
+        fileWriter.write(INSERT_INTO+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
 //        System.out.println(tableName);
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
@@ -292,6 +328,7 @@ public class ProcessQuery {
     }
 
     private String executeSelectQuery(String query) throws Exception {
+        fileWriter.write(SELECT_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = queryArray[queryArray.length-1];
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
@@ -338,6 +375,7 @@ public class ProcessQuery {
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
     private String executeSelectWithConditionQuery(String query) throws Exception {
+        fileWriter.write(SELECT_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         int from_index=0;
         String tableName = "";
@@ -401,6 +439,7 @@ public class ProcessQuery {
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
     private String executeUpdateWithConditionQuery(String query) throws Exception {
+        fileWriter.write(UPDATE_QUERY+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = "";
         String colName = "";
@@ -489,6 +528,7 @@ public class ProcessQuery {
     }
 
     private String executeDeleteWithConditionQuery(String query) throws Exception {
+        fileWriter.write(DELETE_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = "";
         String value = "";
@@ -552,6 +592,7 @@ public class ProcessQuery {
         return "DELETE QUERY HAS BEEN EXECUTED SUCCESSFULLY!!!";
     }
     private String executeDropTableQuery(String query) throws Exception {
+        fileWriter.write(DROP_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
         File databasePath = new File(path);
@@ -572,5 +613,15 @@ public class ProcessQuery {
             throw new Exception("Table doesn't exists");
         }
         return "TABLE HAS BEEN DROPPED SUCCESSFULLY!!!";
+    }
+
+
+    public void closeFileWriter()  {
+        try {
+            fileWriter.write(PROGRAM_EXIT+new Timestamp(System.currentTimeMillis())+"\n");
+            fileWriter.close();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 }

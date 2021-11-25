@@ -3,13 +3,34 @@ package View;
 import Controller.ProcessQuery;
 import View.printer.Printer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class ProcessQueriesView {
     private Printer printer;
     private Scanner scanner;
-    private ProcessQuery processQuery = new ProcessQuery();
-    ProcessQueriesView(Scanner scanner, Printer print){
+    private static File file = new File("./src/main/java/Logs/QueryLogs.txt");
+    private static FileWriter fileWriter;
+    static {
+        try {
+            fileWriter = new FileWriter(file);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+    }
+
+    private ProcessQuery processQuery = new ProcessQuery(fileWriter);
+
+    static  {
+        try {
+            fileWriter.close();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+    }
+    ProcessQueriesView(Scanner scanner, Printer print) throws IOException {
         this.printer = print;
         this.scanner = scanner;
     }
@@ -30,4 +51,5 @@ public class ProcessQueriesView {
             }
         }
     }
+
 }

@@ -28,7 +28,8 @@ public class FeaturesMenu {
                     processQueriesView.displayMenu();
                     break;
                 case "2":
-                    System.out.println("selected 2");
+                    ExportDumpView exportDumpView = new ExportDumpView(scanner, printer);
+                    exportDumpView.displaySchemas();
                     break;
                 case "3":
                     System.out.println("selected 3");

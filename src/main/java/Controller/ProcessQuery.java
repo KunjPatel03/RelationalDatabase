@@ -264,6 +264,7 @@ public class ProcessQuery {
             final String[] columnNames = matcher.group().split(",");
             try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt")) {
                 final StringBuilder createStringBuilder = new StringBuilder();
+                createStringBuilder.append("[UNLOCKED]"+"\n");
                 for (final String columnToken : columnNames) {
                     final String[] tokens = columnToken.trim().split(" ");
                     if (tokens.length == 2) {

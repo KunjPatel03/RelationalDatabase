@@ -1,6 +1,7 @@
 package View;
 
 import Controller.ProcessQuery;
+import Controller.TransactionProcessing;
 import View.printer.Printer;
 
 import java.io.File;
@@ -12,7 +13,7 @@ public class ProcessQueriesView {
     private Printer printer;
     private Scanner scanner;
     private static FileWriter fileWriter;
-
+    private TransactionProcessing transactionProcessing = new TransactionProcessing();
     static {
         try {
             fileWriter = new FileWriter("./src/main/java/Logs/QueryLogs.txt", true);
@@ -38,9 +39,25 @@ public class ProcessQueriesView {
             switch (input) {
                 case "1":
                     printer.printString("Enter your SQL Query:");
-                    String query = scanner.nextLine();
-                    printer.printString(processQuery.processorQuery(query));
+                    String queryInput;
+                    //scanner.nextLine();
+                    StringBuilder stringBuilder = new StringBuilder();
+                    boolean isTransaction=false;
+                    do {
+                        queryInput = scanner.nextLine();
+                        stringBuilder.append(queryInput);
+                        if (queryInput.toUpperCase().startsWith("BEGIN TRANSACTION;")) {
+                            isTransaction = true;
+                        } else if (!isTransaction && queryInput.contains(";")){
+                            printer.printString(processQuery.processorQuery(queryInput));
+                        }else if (isTransaction && queryInput.toUpperCase().contains("COMMIT;")){
+                            break;
+                        }
+
+                    } while (scanner.hasNext());
+                    transactionProcessing.validTransaction(stringBuilder);
                     break;
+
                 case "2":
                     processQuery.closeFileWriter();
                     return;

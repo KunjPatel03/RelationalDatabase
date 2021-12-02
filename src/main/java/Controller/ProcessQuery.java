@@ -1,9 +1,12 @@
 package Controller;
 
+
+import javax.swing.text.Utilities;
 import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
+
 import java.util.regex.Pattern;
 
 public class ProcessQuery {
@@ -128,7 +131,7 @@ public class ProcessQuery {
         }
        return returnMessage;
     }
-    private Boolean isQueryValid(String query) throws Exception {
+    public Boolean isQueryValid(String query) throws Exception {
         final String Query = query.trim().toLowerCase();
         if (Query.contains(CREATE_DATABASE_QUERY)) {
             if(!Pattern.matches(CREATE_DATABASE_QUERY_STRING, Query)){
@@ -174,6 +177,52 @@ public class ProcessQuery {
 
         return true;
     }
+    public Boolean isQueryValidForTransaction(String query) {
+        final String Query = query.trim().toLowerCase();
+        if (Query.contains(CREATE_DATABASE_QUERY)) {
+            if(!Pattern.matches(CREATE_DATABASE_QUERY_STRING, Query)){
+                return false;
+            }
+        }else if(Query.contains(USE_DATABASE_QUERY)){
+            if(!Pattern.matches(USE_DATABASE_QUERY_STRING, Query)){
+               return false;
+            }
+        }
+        else if(Query.contains(CREATE_TABLE_QUERY)){
+            if(!Pattern.matches(USE_CREATE_TABLE_QUERY_STRING, Query)){
+                return false;
+            }
+        }
+        else if(Query.contains(INSERT_QUERY)){
+            if(!Pattern.matches(INSERT_QUERY_SYNTAX, Query)){
+               return false;
+            }
+        }
+        else if(Query.contains(SELECT_QUERY)){
+//            if(!Pattern.matches(SELECT_QUERY_SYNTAX, Query)){
+//                throw new Exception("Invalid insert query !!!!");
+//            }
+//            else if(!Pattern.matches(SELECTWITHCONDITION_QUERY_SYNTAX,Query)){
+//                throw new Exception("Invalid insert query with condition!!!!");
+//            }
+            return true;
+        }
+        else if(Query.contains(UPDATE_QUERY)){
+            if(!Pattern.matches(UPDATEWITHCONDITION_QUERY_SYNTAX, Query)){
+                return false;
+            }
+        }else if(Query.contains(TRUNCATE_TABLE_QUERY)){
+            if(!Pattern.matches(TRUNCATE_TABLE_QUERY_STRING, Query)) {
+               return false;
+            }
+        }else if(Query.contains(DELETE_TABLE_QUERY)){
+            if(!Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, Query)) {
+               return false;
+            }
+        }
+
+        return true;
+    }
     private String executeCreateDatabaseQuery(String query) throws IOException {
         fileWriter.write(CREATE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
@@ -193,6 +242,8 @@ public class ProcessQuery {
                 this.useDatabaseName = file.getName();
             }
         }
+        UContext.setDatabase(useDatabaseName);
+
         return this.useDatabaseName+ " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
     private String executeCreateTableQuery(String query) throws Exception {

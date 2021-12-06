@@ -1,21 +1,19 @@
 package Controller;
 
 import java.io.*;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProcessQuery {
 
-    public static FileWriter fileWriter;
+    private static GeneralLoggingController generalLoggingController = null;
 
-    public ProcessQuery() {}
-
-    public ProcessQuery(FileWriter fileWriter) throws IOException {
-        this.fileWriter = fileWriter;
-        fileWriter.write("QUERY PROCESSOR INVOKED/STARTED AT "+ new Timestamp(System.currentTimeMillis())+"\n");
+    public ProcessQuery() {
+        this.generalLoggingController = new GeneralLoggingController();
+        generalLoggingController.writeLog("QUERY PROCESSOR INVOKED/STARTED AT ", System.currentTimeMillis());
     }
+
     public static final String CREATE_DATABASE_QUERY =
             "create database";
     public static final String CREATE_DATABASE_QUERY_STRING =
@@ -79,17 +77,15 @@ public class ProcessQuery {
 
    public static final String INSERT_INTO = "INSERTING VALUES ";
 
-   public static final String SELECT_STATEMENT = "SELECT ";
+   public static final String SELECT_STATEMENT = "SELECT STATEMENT ";
 
-   public static final String UPDATE_STATEMENT = "UPDATE ";
+   public static final String UPDATE_STATEMENT = "UPDATE STATEMENT ";
 
-   public static final String TRUNCATE_STATEMENT = "TRUNCATE ";
+   public static final String DELETE_STATEMENT = "DELETE STATEMENT ";
 
-   public static final String DELETE_STATEMENT = "DELETE ";
+   public static final String DROP_STATEMENT = "DROP STATEMENT ";
 
-   public static final String DROP_STATEMENT = "DROP ";
-
-   public static final String EXECUTED = "EXECUTED AT ";
+   public static final String EXECUTED = " EXECUTED AT ";
 
    public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
 
@@ -175,9 +171,9 @@ public class ProcessQuery {
         return true;
     }
     private String executeCreateDatabaseQuery(String query) throws IOException {
-        fileWriter.write(CREATE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
-        System.out.println(dbName);
+        String message = CREATE_DATABASE+" - "+dbName+EXECUTED;
+        generalLoggingController.writeLog(message, System.currentTimeMillis());
         String path ="./src/main/java/Model/database/"+ dbName;
         File databasePath = new File(path);
         databasePath.mkdirs();
@@ -185,18 +181,18 @@ public class ProcessQuery {
     }
 
     private String executeUseDatabaseQuery(String query) throws IOException {
-        fileWriter.write(USE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
         final File[] files = new File("./src/main/java/Model/database/").listFiles();
         for (final File file : files) {
             if (file.getName().equalsIgnoreCase(dbName)) {
                 this.useDatabaseName = file.getName();
+                String message = USE_DATABASE+" - "+this.useDatabaseName+EXECUTED;
+                generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
         }
         return this.useDatabaseName+ " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
     private String executeCreateTableQuery(String query) throws Exception {
-        fileWriter.write(CREATE_TABLE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
         File databasePath = new File(path);
@@ -212,6 +208,8 @@ public class ProcessQuery {
         if (matcher.find()) {
             final String[] columnNames = matcher.group().split(",");
             try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt")) {
+                String message = CREATE_TABLE+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+                generalLoggingController.writeLog(message, System.currentTimeMillis());
                 final StringBuilder createStringBuilder = new StringBuilder();
                 for (final String columnToken : columnNames) {
                     final String[] tokens = columnToken.trim().split(" ");
@@ -252,10 +250,10 @@ public class ProcessQuery {
     }
 
     private String executeInsertQuery(String query) throws Exception {
-        fileWriter.write(INSERT_INTO+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
-//        System.out.println(tableName);
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String message = INSERT_INTO+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+        generalLoggingController.writeLog(message, System.currentTimeMillis());
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
@@ -328,9 +326,10 @@ public class ProcessQuery {
     }
 
     private String executeSelectQuery(String query) throws Exception {
-        fileWriter.write(SELECT_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = queryArray[queryArray.length-1];
+        String message = SELECT_STATEMENT+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+        generalLoggingController.writeLog(message, System.currentTimeMillis());
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
@@ -375,7 +374,6 @@ public class ProcessQuery {
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
     private String executeSelectWithConditionQuery(String query) throws Exception {
-        fileWriter.write(SELECT_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         int from_index=0;
         String tableName = "";
@@ -384,6 +382,8 @@ public class ProcessQuery {
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("from")){
                 tableName = queryArray[i+1];
+                String message = SELECT_STATEMENT+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+                generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
                 colName = queryArray[i+1];
@@ -439,7 +439,6 @@ public class ProcessQuery {
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
     private String executeUpdateWithConditionQuery(String query) throws Exception {
-        fileWriter.write(UPDATE_QUERY+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = "";
         String colName = "";
@@ -450,6 +449,8 @@ public class ProcessQuery {
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("update")){
                 tableName = queryArray[i+1];
+                String message = UPDATE_STATEMENT+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+                generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
                 colName = queryArray[i+1];
@@ -528,13 +529,14 @@ public class ProcessQuery {
     }
 
     private String executeDeleteWithConditionQuery(String query) throws Exception {
-        fileWriter.write(DELETE_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = "";
         String value = "";
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("from")){
                 tableName = queryArray[i+1];
+                String message = DELETE_STATEMENT+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+                generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
                 value = queryArray[i+3];
@@ -592,8 +594,9 @@ public class ProcessQuery {
         return "DELETE QUERY HAS BEEN EXECUTED SUCCESSFULLY!!!";
     }
     private String executeDropTableQuery(String query) throws Exception {
-        fileWriter.write(DROP_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
+        String message = DROP_STATEMENT+" - "+this.useDatabaseName+" -> "+tableName+EXECUTED;
+        generalLoggingController.writeLog(message, System.currentTimeMillis());
         String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
@@ -618,8 +621,8 @@ public class ProcessQuery {
 
     public void closeFileWriter()  {
         try {
-            fileWriter.write(PROGRAM_EXIT+new Timestamp(System.currentTimeMillis())+"\n");
-            fileWriter.close();
+            generalLoggingController.writeLog(PROGRAM_EXIT, System.currentTimeMillis());
+            generalLoggingController.createFile(GeneralLoggingController.GeneralLogLocation).close();
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }

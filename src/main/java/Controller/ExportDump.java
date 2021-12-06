@@ -29,18 +29,36 @@ public class ExportDump {
                 File sourceSchemaFile = new File(databaseToExport, schema);
                 File destinationSchemaFile = new File(databaseDumpFolder, schema);
                 InputStream inputStream = new FileInputStream(sourceSchemaFile);
+                BufferedReader inputBufferReader = new BufferedReader(new InputStreamReader(inputStream));
                 OutputStream outputStream = new FileOutputStream(destinationSchemaFile);
+                BufferedWriter outputBufferWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
 
-                byte[] buffer = new byte[1024];
-
-                int length;
-
-                while ((length = inputStream.read(buffer)) > 0){
-                    outputStream.write(buffer, 0, length);
+                String line;
+                String insertQuery = "-----\n----- Dumping data for table `" + schema + "`\n" + "-----\nINSERT INTO `" + schema +"` VALUES (";
+                String createTableQuery = "";
+                boolean readHeader = true;
+                while ((line = inputBufferReader.readLine()) != null){
+                    if(line.indexOf('$') != -1){
+                        if(readHeader){
+                            readHeader = false;
+                        } else {
+                            String[] values = line.split("\\|\\|");
+                            for(int i = 0; i < values.length - 1; i++){
+                                values[i] = values[i].replaceAll("\\$", "");
+                                insertQuery += values[i];
+                                if(i < values.length-2){
+                                    insertQuery += ", ";
+                                }
+                            }
+                            insertQuery += "), (";
+                        }
+                    }
                 }
-
-                inputStream.close();
-                outputStream.close();
+                insertQuery = insertQuery.substring(0, insertQuery.length()-3) + ";";
+                outputBufferWriter.write(insertQuery);
+                outputBufferWriter.newLine();
+                inputBufferReader.close();
+                outputBufferWriter.close();
             }
             return true;
         } else{

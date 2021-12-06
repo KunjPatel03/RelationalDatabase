@@ -2,7 +2,6 @@ package Controller;
 
 public class UContext {
     static String currentDb ;
-
     public static void setDatabase(String databaseName)
     {
         currentDb = databaseName;

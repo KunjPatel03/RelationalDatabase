@@ -3,7 +3,6 @@ package Controller;
 import View.printer.Printer;
 
 import java.io.*;
-import java.util.ArrayList;
 
 public class ExportDump {
     private File databaseToExport;
@@ -42,6 +41,7 @@ public class ExportDump {
                 String createTableQuery = "CREATE TABLE `" + schemaName + "` ";
                 String dropTableQuery = "--\n-- Table structure for table `" + schemaName + "`\n--\n\n";
                 dropTableQuery += "DROP TABLE IF EXISTS `" + schemaName + "`;\n";
+                String foreignKey = "";
                 boolean readHeader = true;
                 boolean isDataPresent = false;
 
@@ -53,7 +53,7 @@ public class ExportDump {
                         line = line.replaceAll("\\$", "");
                         String[] lineValues = line.split("\\|\\|");
                         if(readHeader){
-                            createTableQuery = getCreateQuery(lineValues, createTableQuery, primaryKey);
+                            createTableQuery = getCreateQuery(lineValues, createTableQuery, primaryKey, foreignKey);
                             readHeader = false;
                         } else {
                             isDataPresent = true;
@@ -95,9 +95,10 @@ public class ExportDump {
         return insertQuery;
     }
 
-    public String getCreateQuery(String[] columns, String createTableQuery, String primaryKey){
+    public String getCreateQuery(String[] columns, String createTableQuery, String primaryKey, String foreignKey){
         createTableQuery += "(";
         boolean isPrimaryKeyPresent = false;
+        boolean isForeignKeyPresent = false;
         columnTypes = new String[columns.length];
 
         for(int i = 0; i < columns.length; i++){
@@ -110,6 +111,15 @@ public class ExportDump {
                 primaryKey += columnName + "`)";
                 columnType = columnType.replaceAll("\\|PK", "");
                 isPrimaryKeyPresent = true;
+            } else if(columns[i].indexOf("FK") != -1){
+                isForeignKeyPresent = true;
+                String[] fKeyConstraints = columnType.split("\\|");
+                columnType = fKeyConstraints[0];
+                String referencedTable = fKeyConstraints[2];
+                String referencedColumn = fKeyConstraints[3];
+                String constraintName = referencedColumn+"foreignKey";
+                foreignKey = "CONSTRAINT `" + constraintName + "` FOREIGN KEY (`" + columnName + "`) REFERENCES `" +
+                        referencedTable + "` (`" + referencedColumn +"`)";
             }
             columnTypes[i] = columnType;
             createTableQuery += "`" +  columnName + "` " +  columnType;
@@ -117,7 +127,9 @@ public class ExportDump {
                 createTableQuery+=", \n";
             }
         }
-        if(isPrimaryKeyPresent){
+        if(isPrimaryKeyPresent && isForeignKeyPresent){
+            createTableQuery+= ",\n" + primaryKey + ",\n" + foreignKey + ");\n";
+        } else if(isPrimaryKeyPresent){
             createTableQuery+= ",\n" + primaryKey + ");\n";
         } else{
             createTableQuery+= ");\n";

@@ -19,6 +19,7 @@ public class FeaturesMenu {
             printer.printString("1. Process SQL Queries");
             printer.printString("2. Generate Dump");
             printer.printString("3. Generate ERD");
+            printer.printString("4. Analytics");
             printer.printString("5. Generate Meta");
             printer.printString("6. Logout");
             printer.printString("Select an option:");
@@ -37,8 +38,9 @@ public class FeaturesMenu {
                     System.out.println("selected 3");
                     break;
                 case "4":
-                    System.out.println("selected 4");
-                    return;
+                    AnalyticsView analyticsView = new AnalyticsView(scanner, printer);
+                    analyticsView.displayMenu();
+                    break;
                 case "5":
                     MetaGenerator metaGenerator = new MetaGenerator();
                     printer.printString("Enter the database name:");

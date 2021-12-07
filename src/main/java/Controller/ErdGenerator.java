@@ -25,13 +25,13 @@ public class ErdGenerator {
                     final String colAttributes = columnName[1].substring(0, columnName[1].length() - 1);
                     final String[] Attributes = colAttributes.split("\\|");
                     if (Attributes.length == 2 && Attributes[1].equals("PK")) {
-                        fileWriter.append("PK").append(" ")
-                                .append("|").append(" ")
+                        fileWriter.append("PK ")
+                                .append("| ")
                                 .append(colName).append(" ")
                                 .append(Attributes[0]);
                     } else if (Attributes.length == 4 && Attributes[1].equals("FK")) {
-                        fileWriter.append("FK").append(" ")
-                                .append("|").append(" ")
+                        fileWriter.append("FK ")
+                                .append("| ")
                                 .append(colName).append(" ")
                                 .append(Attributes[0]);
                         list.add(tableName +" "+colName+" => "+Attributes[2]+" "+ Attributes[3]);

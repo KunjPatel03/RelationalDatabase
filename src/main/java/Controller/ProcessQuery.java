@@ -696,7 +696,7 @@ public class ProcessQuery {
                     }
                 }
             }
-            System.out.println(stringBuilder);
+//            System.out.println(stringBuilder);
             File file = new File(FullPath);
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
@@ -745,11 +745,11 @@ public class ProcessQuery {
         final String tablePath = path + this.databaseName + "/";
         final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
         final File inMemoryDatabase = new File(inMemoryPath);
-        if (inMemoryDatabase.mkdirs()) {
+        if (inMemoryDatabase.mkdirs()||inMemoryDatabase.exists()) {
             final File dbFolder = new File(tablePath);
             final File[] dbTables = dbFolder.listFiles();
             for (final File table : dbTables) {
-                System.out.println(table);
+//                System.out.println(table);
                 final Path src = Paths.get(tablePath+ table.getName());
                 final Path dest = Paths.get(inMemoryPath+ table.getName());
                 try {
@@ -774,7 +774,7 @@ public class ProcessQuery {
             table.delete();
         }
         dbFolder.delete();
-        if (dbFolder.mkdirs()) {
+        if (dbFolder.mkdirs()||dbFolder.exists()) {
             final File[] inMemoryDatabaseTables = inMemoryDatabase.listFiles();
             for (final File table : inMemoryDatabaseTables) {
                 final Path src = Paths.get(inMemoryPath + table.getName());

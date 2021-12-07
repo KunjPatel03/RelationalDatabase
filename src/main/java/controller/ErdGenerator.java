@@ -20,26 +20,7 @@ public class ErdGenerator {
                 final String columnHeaders = bufferReader.readLine();
                 final String[] ColumnHeaders = columnHeaders.split("\\$\\|\\|\\$");
                 for(String columnNames : ColumnHeaders){
-                    final String[] columnName = columnNames.split("\\(");
-                    final String colName = columnName[0];
-                    final String colAttributes = columnName[1].substring(0, columnName[1].length() - 1);
-                    final String[] Attributes = colAttributes.split("\\|");
-                    if (Attributes.length == 2 && Attributes[1].equals("PK")) {
-                        fileWriter.append("PK ")
-                                .append("| ")
-                                .append(colName).append(" ")
-                                .append(Attributes[0]);
-                    } else if (Attributes.length == 4 && Attributes[1].equals("FK")) {
-                        fileWriter.append("FK ")
-                                .append("| ")
-                                .append(colName).append(" ")
-                                .append(Attributes[0]);
-                        list.add(tableName +" "+colName+" => "+Attributes[2]+" "+ Attributes[3]);
-                       } else {
-                        fileWriter.append(colName).append(" ")
-                                .append(Attributes[0]);
-                    }
-                    fileWriter.append(System.getProperty("line.separator"));
+                    buildErdLogic(fileWriter, tableName, list, columnNames);
                 }
                 fileWriter.append(System.getProperty("line.separator"));
                 for (final String value : list) {
@@ -51,6 +32,29 @@ public class ErdGenerator {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static void buildErdLogic(FileWriter fileWriter, String tableName, List<String> list, String columnNames) throws IOException {
+        final String[] columnName = columnNames.split("\\(");
+        final String colName = columnName[0];
+        final String colAttributes = columnName[1].substring(0, columnName[1].length() - 1);
+        final String[] Attributes = colAttributes.split("\\|");
+        if (Attributes.length == 2 && Attributes[1].equals("PK")) {
+            fileWriter.append("PK ")
+                    .append("| ")
+                    .append(colName).append(" ")
+                    .append(Attributes[0]);
+        } else if (Attributes.length == 4 && Attributes[1].equals("FK")) {
+            fileWriter.append("FK ")
+                    .append("| ")
+                    .append(colName).append(" ")
+                    .append(Attributes[0]);
+            list.add(tableName +" "+colName+" => "+Attributes[2]+" "+ Attributes[3]);
+           } else {
+            fileWriter.append(colName).append(" ")
+                    .append(Attributes[0]);
+        }
+        fileWriter.append(System.getProperty("line.separator"));
     }
 
 

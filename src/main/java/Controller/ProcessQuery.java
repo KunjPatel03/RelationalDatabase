@@ -750,10 +750,10 @@ public class ProcessQuery {
             final File[] dbTables = dbFolder.listFiles();
             for (final File table : dbTables) {
 //                System.out.println(table);
-                final Path src = Paths.get(tablePath+ table.getName());
-                final Path dest = Paths.get(inMemoryPath+ table.getName());
+                final Path source = Paths.get(tablePath+ table.getName());
+                final Path destination = Paths.get(inMemoryPath+ table.getName());
                 try {
-                    Files.copy(src, dest);
+                    Files.copy(source, destination);
                 } catch (final IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -761,12 +761,12 @@ public class ProcessQuery {
             useDifferentPath(true);
         }
 
-        return "";
+        return "Started transaction";
     }
     private String executeCommit(String query) throws Exception {
         final String tablePath = DBPATH + this.databaseName + "/";
         final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
-        final File inMemoryDatabase = new File(inMemoryPath);
+        final File newInMemoryDatabase = new File(inMemoryPath);
         final String inServerDatabasePath = path + "/" + this.databaseName + "/";
         final File dbFolder = new File(inServerDatabasePath);
         final File[] allTables = dbFolder.listFiles();
@@ -775,23 +775,23 @@ public class ProcessQuery {
         }
         dbFolder.delete();
         if (dbFolder.mkdirs()||dbFolder.exists()) {
-            final File[] inMemoryDatabaseTables = inMemoryDatabase.listFiles();
-            for (final File table : inMemoryDatabaseTables) {
-                final Path src = Paths.get(inMemoryPath + table.getName());
-                final Path dest = Paths.get(inServerDatabasePath + table.getName());
+            final File[] Tables = newInMemoryDatabase.listFiles();
+            for (final File table : Tables) {
+                final Path source = Paths.get(inMemoryPath + table.getName());
+                final Path destination = Paths.get(inServerDatabasePath + table.getName());
                 try {
-                    Files.copy(src, dest);
+                    Files.copy(source, destination);
                 } catch (final IOException e) {
                     System.out.println(e.getMessage());
                 }
             }
-            for (final File table : inMemoryDatabaseTables) {
+            for (final File table : Tables) {
                 table.delete();
             }
-            inMemoryDatabase.delete();
+            newInMemoryDatabase.delete();
             useDifferentPath(false);
         }
-        return "";
+        return "Committed transaction";
     }
 
     private String executeRollBack(String query) throws Exception {
@@ -816,6 +816,8 @@ public class ProcessQuery {
         for (final File table : allTables) {
             table.delete();
         }
+        File directory = new File(DBPATH+dbName);
+        directory.delete();
         return dbName + " HAS BEEN DROPPED SUCCESSFULLY !!!";
     }
 

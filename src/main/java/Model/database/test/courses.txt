@@ -1,0 +1,2 @@
+courseId(INT|PK)$||$courseName(TEXT)$||$id(INT|FK|students|id)
+1$||$physics$||$1

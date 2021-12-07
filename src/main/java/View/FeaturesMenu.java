@@ -1,5 +1,6 @@
 package View;
 
+import Controller.MetaGenerator;
 import View.printer.Printer;
 import java.util.Scanner;
 
@@ -18,7 +19,8 @@ public class FeaturesMenu {
             printer.printString("1. Process SQL Queries");
             printer.printString("2. Generate Dump");
             printer.printString("3. Generate ERD");
-            printer.printString("4. Logout");
+            printer.printString("5. Generate Meta");
+            printer.printString("6. Logout");
             printer.printString("Select an option:");
             final String input = scanner.nextLine();
 
@@ -36,6 +38,17 @@ public class FeaturesMenu {
                     break;
                 case "4":
                     System.out.println("selected 4");
+                    return;
+                case "5":
+                    MetaGenerator metaGenerator = new MetaGenerator();
+                    printer.printString("Enter the database name:");
+                    String dbName = this.scanner.nextLine();
+                    printer.printString("Enter the table name:");
+                    String tableName = this.scanner.nextLine();
+                    metaGenerator.createMetaData(dbName,tableName);
+                    return;
+                case "6":
+                    System.out.println("selected 6");
                     return;
                 default:
                     break;

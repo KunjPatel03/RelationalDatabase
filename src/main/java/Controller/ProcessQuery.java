@@ -5,7 +5,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -185,12 +185,6 @@ public class ProcessQuery {
             }
         }
         else if(Query.contains(SELECT_QUERY)){
-//            if(!Pattern.matches(SELECT_QUERY_SYNTAX, Query)){
-//                throw new Exception("Invalid insert query !!!!");
-//            }
-//            else if(!Pattern.matches(SELECTWITHCONDITION_QUERY_SYNTAX,Query)){
-//                throw new Exception("Invalid insert query with condition!!!!");
-//            }
             return true;
         }
         else if(Query.contains(UPDATE_QUERY)){
@@ -273,17 +267,17 @@ public class ProcessQuery {
             try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt")) {
                 String message = CREATE_TABLE+" - "+this.databaseName+" -> "+tableName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
-                final StringBuilder createStringBuilder = new StringBuilder();
+                final StringBuilder stringBuilder = new StringBuilder();
                 for (final String columnToken : columnNames) {
                     final String[] tokens = columnToken.trim().split(" ");
                     if (tokens.length == 2) {
-                        createStringBuilder.append(tokens[0])
+                        stringBuilder.append(tokens[0])
                                 .append("(").append(tokens[1])
                                 .append(")")
                                 .append("$||$");
                     }
                     if (tokens.length == 4 && tokens[2].equalsIgnoreCase("PRIMARY")) {
-                        createStringBuilder.append(tokens[0])
+                        stringBuilder.append(tokens[0])
                                 .append("(").append(tokens[1]).append("|")
                                 .append("PK")
                                 .append(")")
@@ -292,7 +286,7 @@ public class ProcessQuery {
                     if (tokens.length == 4 && tokens[2].equalsIgnoreCase("REFERENCES")) {
                         final String foreignKeyTable = tokens[3].split("\\(")[0];
                         String foreignKeyCol = tokens[3].split("\\(")[1].replaceAll("\\)", "");
-                        createStringBuilder.append(tokens[0]).append("(")
+                        stringBuilder.append(tokens[0]).append("(")
                                 .append(tokens[1]).append("|")
                                 .append("FK").append("|")
                                 .append(foreignKeyTable).append("|")
@@ -301,10 +295,10 @@ public class ProcessQuery {
                                 .append("$||$");
                     }
                 }
-                createStringBuilder.replace(createStringBuilder.length()
-                        - "$||$".length(), createStringBuilder.length(), "");
-                createStringBuilder.append("\n");
-                fileWriter.append(createStringBuilder.toString());
+                stringBuilder.replace(stringBuilder.length()
+                        - "$||$".length(), stringBuilder.length(), "");
+                stringBuilder.append("\n");
+                fileWriter.append(stringBuilder.toString());
             }
             catch(Exception e){
                 System.out.println(e.getMessage());
@@ -316,7 +310,6 @@ public class ProcessQuery {
     private String executeInsertQuery(String query) throws Exception {
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
 
-//        System.out.println(tableName);
         String path =DBPATH+ this.databaseName;
 
         String message = INSERT_INTO+" - "+this.databaseName+" -> "+tableName+EXECUTED;
@@ -330,17 +323,20 @@ public class ProcessQuery {
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         final Pattern pattern = Pattern.compile(INSERT_COLUMN_NAME_STRING);
-        final Matcher matcher = pattern.matcher(query);
+        final Matcher insertMatcher = pattern.matcher(query);
         final Pattern pattern1 = Pattern.compile(INSERT_VALUES_STRING);
-        final Matcher matcher1 = pattern1.matcher(query);
-        if(matcher.find()){
-            final String allColumnNames = matcher.group();
-            final String[] columnNamesArray = allColumnNames.replace(")", "").split(",");
+        final Matcher valuesMatcher = pattern1.matcher(query);
+        if(insertMatcher.find()){
+            final String ColumnNames = insertMatcher.group();
+            final String[] columnNamesArray = ColumnNames
+                    .replace(")", "").split(",");
             final Set<String> columnNames = new HashSet<>(Arrays.asList(columnNamesArray));
             final int numberOfColumns = columnNames.size();
-            if (matcher1.find()) {
-                final String allColumnValues = matcher1.group().substring(8, matcher1.group().length() - 1);
-                final String[] columnValues = allColumnValues.replace("\"", "").split(",");
+            if (valuesMatcher.find()) {
+                final String ColumnValues = valuesMatcher.group().substring(8,
+                        valuesMatcher.group().length() - 1);
+                final String[] columnValues = ColumnValues
+                        .replace("\"", "").split(",");
                 final Map<String, String> columnValue = new LinkedHashMap<>();
                 for (int i = 0; i < numberOfColumns; i++) {
                     columnValue.put(columnNamesArray[i].trim(), columnValues[i].trim());
@@ -349,18 +345,23 @@ public class ProcessQuery {
                         , true);
                      final BufferedReader bufferedReader = new BufferedReader(new
                              FileReader(tablePath+tableName+".txt"))) {
-                    final String columnNamesInFile = bufferedReader.readLine();
-                    final String[] columnNamesExtracted = columnNamesInFile.split("\\$\\|\\|\\$");
-//                    System.out.println(columnNamesExtracted);
+                    final String columnNamesFromFile = bufferedReader.readLine();
+                    final String[] columnNamesExtracted = columnNamesFromFile
+                            .split("\\$\\|\\|\\$");
+
                     final LinkedHashMap<String, String> columnDetails = new LinkedHashMap<>();
                     for (final String column : columnNamesExtracted) {
-                        final String[] temporaryTokens = column.replace(")", "").split("\\(");
-                        columnDetails.put(temporaryTokens[0].replace("(", ""), temporaryTokens[1].split("\\|")[0]);
+                        final String[] temporaryTokens = column
+                                .replace(")", "").split("\\(");
+                        columnDetails.put(temporaryTokens[0]
+                                .replace("(", ""), temporaryTokens[1]
+                                .split("\\|")[0]);
                     }
                     for (int i = 0; i < columnNamesExtracted.length; i++) {
-                        String[] temporaryTokens = columnNamesExtracted[i].replace(")", "").split("\\(");
+                        String[] temporaryTokens = columnNamesExtracted[i]
+                                .replace(")", "").split("\\(");
                     }
-                    final StringBuilder valueStringBuilder = new StringBuilder();
+                    final StringBuilder stringBuilder = new StringBuilder();
                     for (final String columnName : columnValue.keySet()) {
                         final String columnDataType = columnDetails.get(columnName);
                         final String column_value = columnValue.get(columnName);
@@ -381,12 +382,12 @@ public class ProcessQuery {
                         if (columnDataType.equalsIgnoreCase("BOOLEAN")) {
                             boolean value = Boolean.parseBoolean(column_value);
                         }
-                        valueStringBuilder.append(column_value).append("$||$");
+                        stringBuilder.append(column_value).append("$||$");
                     }
-                    valueStringBuilder.replace(valueStringBuilder.length() - "$||$".length(),
-                            valueStringBuilder.length(), "");
-                    valueStringBuilder.append("\n");
-                    fileWriter.append(valueStringBuilder.toString());
+                    stringBuilder.replace(stringBuilder.length() - "$||$".length(),
+                            stringBuilder.length(), "");
+                    stringBuilder.append("\n");
+                    fileWriter.append(stringBuilder.toString());
                 }
             }
         }

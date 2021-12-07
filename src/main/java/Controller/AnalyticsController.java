@@ -15,8 +15,23 @@ public class AnalyticsController {
             "count update";
     private static final String COUNT_UPDATE_STRING =
             "^(?i)(COUNT\\sUPDATE\\s[a-zA-Z\\d]+;)$";
+    private static final String COUNT_SELECT =
+            "count select";
+    private static final String COUNT_SELECT_STRING =
+            "^(?i)(COUNT\\sSELECT\\s[a-zA-Z\\d]+;)$";
+    private static final String COUNT_INSERT =
+            "count insert";
+    private static final String COUNT_INSERT_STRING =
+            "^(?i)(COUNT\\sINSERT\\s[a-zA-Z\\d]+;)$";
+    private static final String COUNT_DELETE =
+            "count delete";
+    private static final String COUNT_DELETE_STRING =
+            "^(?i)(COUNT\\sDELETE\\s[a-zA-Z\\d]+;)$";
     private static int queryCount;
     private static int updateCount;
+    private static int selectCount;
+    private static int insertCount;
+    private static int deleteCount;
 
     public String analytics(String query) throws Exception {
         String message = null;
@@ -25,6 +40,12 @@ public class AnalyticsController {
                 message = executeCountQuery(query);
             } else if (Pattern.matches(COUNT_UPDATE_STRING, query)) {
                 message = executeUpdateQuery(query);
+            }else if (Pattern.matches(COUNT_SELECT_STRING, query)) {
+                message = executeSelectQuery(query);
+            }else if (Pattern.matches(COUNT_INSERT_STRING, query)) {
+                message = executeInsertQuery(query);
+            }else if (Pattern.matches(COUNT_DELETE_STRING, query)) {
+                message = executeDeleteQuery(query);
             }
         } else {
             message = "Invalid Analytics query";
@@ -42,7 +63,19 @@ public class AnalyticsController {
             if (!Pattern.matches(COUNT_UPDATE_STRING, Query)) {
                 return false;
             }
-        } else {
+        }else if (Query.contains(COUNT_SELECT)) {
+            if (!Pattern.matches(COUNT_SELECT_STRING, Query)) {
+                return false;
+            }
+        }else if (Query.contains(COUNT_INSERT)) {
+            if (!Pattern.matches(COUNT_INSERT_STRING, Query)) {
+                return false;
+            }
+        }else if (Query.contains(COUNT_DELETE)) {
+            if (!Pattern.matches(COUNT_DELETE_STRING, Query)) {
+                return false;
+            }
+        }else {
             return false;
         }
         return true;
@@ -81,7 +114,64 @@ public class AnalyticsController {
                     }
                 }
             }
-            message = "Total " + updateCount + " Update operations are performed " + dbName;
+            message = "Total " + updateCount + " Update operations are performed on " + dbName;
+        }
+        System.out.println(message);
+        return "Analytics executed";
+    }
+
+    private String executeInsertQuery(String query) throws Exception {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
+        String line, message;
+        try (final FileReader fileReader = new FileReader(queryLogsPath);
+             final BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.contains("|") && line.contains("INSERTING")) {
+                    String dbNameFromLog = line.split("\\$")[1].trim().split(" ")[0];
+                    if (dbNameFromLog.equalsIgnoreCase(dbName)) {
+                        ++insertCount;
+                    }
+                }
+            }
+            message = "Total " + insertCount + " Insert operations are performed on " + dbName;
+        }
+        System.out.println(message);
+        return "Analytics executed";
+    }
+
+    private String executeSelectQuery(String query) throws Exception {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
+        String line, message;
+        try (final FileReader fileReader = new FileReader(queryLogsPath);
+             final BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.contains("|") && line.contains("SELECT")) {
+                    String dbNameFromLog = line.split("\\$")[1].trim().split(" ")[0];
+                    if (dbNameFromLog.equalsIgnoreCase(dbName)) {
+                        ++selectCount;
+                    }
+                }
+            }
+            message = "Total " + selectCount + " Select operations are performed on " + dbName;
+        }
+        System.out.println(message);
+        return "Analytics executed";
+    }
+
+    private String executeDeleteQuery(String query) throws Exception {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
+        String line, message;
+        try (final FileReader fileReader = new FileReader(queryLogsPath);
+             final BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.contains("|") && line.contains("DELETE")) {
+                    String dbNameFromLog = line.split("\\$")[1].trim().split(" ")[0];
+                    if (dbNameFromLog.equalsIgnoreCase(dbName)) {
+                        ++deleteCount;
+                    }
+                }
+            }
+            message = "Total " + deleteCount + " DELETE operations are performed on " + dbName;
         }
         System.out.println(message);
         return "Analytics executed";

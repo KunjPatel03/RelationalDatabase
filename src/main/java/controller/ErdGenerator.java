@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ErdGenerator {
-    public static void generateERD(String databaseName){
+    public void generateERD(String databaseName){
         final String databasePath = "./src/main/java/Model/database/" + databaseName+"/";
         final File allTables = new File(databasePath);
         for(File table: allTables.listFiles()){

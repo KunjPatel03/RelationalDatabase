@@ -12,7 +12,7 @@ public class MetaGenerator {
         if(!metadataPath.isDirectory() && !metadataPath.exists()){
             metadataPath.mkdirs();
         }
-        try(final FileWriter fileWriter = new FileWriter(metadataPath+ tableName + ".txt"
+        try(final FileWriter fileWriter = new FileWriter(metadataPath+ "/"+tableName + ".txt"
                 , true)){
             stringBuilder.append("Database Name").append(": ").append(databaseName).append("\n");
             stringBuilder.append("Table Name").append(": ").append(tableName).append("\n");

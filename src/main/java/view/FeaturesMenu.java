@@ -1,5 +1,6 @@
 package view;
 
+import controller.ErdGenerator;
 import controller.MetaGenerator;
 import view.printer.Printer;
 import java.util.Scanner;
@@ -35,7 +36,10 @@ public class FeaturesMenu {
                     exportDumpView.displaySchemas();
                     break;
                 case "3":
-                    System.out.println("selected 3");
+                    ErdGenerator erdGenerator = new ErdGenerator();
+                    printer.printString("Enter the database name:");
+                    String databaseName = this.scanner.nextLine();
+                    erdGenerator.generateERD(databaseName);
                     break;
                 case "4":
                     AnalyticsView analyticsView = new AnalyticsView(scanner, printer);
@@ -48,9 +52,8 @@ public class FeaturesMenu {
                     printer.printString("Enter the table name:");
                     String tableName = this.scanner.nextLine();
                     metaGenerator.generateMetaDataFile(dbName,tableName);
-                    return;
+                    break;
                 case "6":
-                    System.out.println("selected 6");
                     return;
                 default:
                     break;

@@ -1,4 +1,4 @@
-package Controller;
+package controller;
 
 import java.io.FileWriter;
 import java.math.BigInteger;

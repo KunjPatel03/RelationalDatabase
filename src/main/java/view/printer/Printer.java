@@ -1,4 +1,4 @@
-package View.printer;
+package view.printer;
 
 public class Printer {
     private static Printer print;

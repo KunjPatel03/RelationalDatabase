@@ -1,4 +1,4 @@
-package Controller;
+package controller;
 
 import java.io.*;
 
@@ -223,21 +223,21 @@ public class ProcessQuery {
             if(!Pattern.matches(START_TRANSACTION_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new Exception("Invalid transaction query !!!!");
             }
         }
         else if(Query.contains(COMMIT_TABLE_QUERY)){
             if(!Pattern.matches(COMMIT_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new Exception("Invalid commit table query !!!!");
             }
         }
         else if(Query.contains(ROLLBACK_TABLE_QUERY)){
             if(!Pattern.matches(ROLLBACK_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new Exception("Invalid rollback query !!!!");
             }
         }
         else if(Query.contains(DROP_TABLE_QUERY)){

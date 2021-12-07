@@ -1,7 +1,7 @@
-package View;
+package view;
 
-import Controller.ExportDump;
-import View.printer.Printer;
+import controller.ExportDump;
+import view.printer.Printer;
 
 import java.io.File;
 import java.io.IOException;

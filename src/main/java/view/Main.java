@@ -1,9 +1,9 @@
-package View;
+package view;
 
-import Controller.User;
-import Controller.UserLogin;
-import Controller.UserSession;
-import View.printer.Printer;
+import controller.User;
+import controller.UserLogin;
+import controller.UserSession;
+import view.printer.Printer;
 import java.util.Scanner;
 
 public class Main {

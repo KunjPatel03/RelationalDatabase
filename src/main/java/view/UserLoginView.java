@@ -1,6 +1,6 @@
-package View;
+package view;
 
-import View.printer.Printer;
+import view.printer.Printer;
 
 import java.util.Scanner;
 

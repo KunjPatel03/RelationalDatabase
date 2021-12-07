@@ -1,7 +1,7 @@
-package View;
+package view;
 
-import Controller.AnalyticsController;
-import View.printer.Printer;
+import controller.AnalyticsController;
+import view.printer.Printer;
 
 import java.util.Scanner;
 

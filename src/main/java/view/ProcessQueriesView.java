@@ -1,7 +1,7 @@
-package View;
+package view;
 
-import Controller.ProcessQuery;
-import View.printer.Printer;
+import controller.ProcessQuery;
+import view.printer.Printer;
 import java.io.IOException;
 import java.util.Scanner;
 

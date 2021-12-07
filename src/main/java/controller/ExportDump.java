@@ -1,6 +1,6 @@
-package Controller;
+package controller;
 
-import View.printer.Printer;
+import view.printer.Printer;
 
 import java.io.*;
 

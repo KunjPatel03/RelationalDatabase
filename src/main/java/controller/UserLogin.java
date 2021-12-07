@@ -1,8 +1,8 @@
-package Controller;
+package controller;
 
 
-import Model.questions.Questions;
-import View.printer.Printer;
+import model.questions.Questions;
+import view.printer.Printer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

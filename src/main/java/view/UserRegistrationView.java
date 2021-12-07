@@ -1,9 +1,9 @@
-package View;
+package view;
 
-import Controller.User;
-import Controller.UserRegistration;
-import Model.questions.Questions;
-import View.printer.Printer;
+import controller.User;
+import controller.UserRegistration;
+import model.questions.Questions;
+import view.printer.Printer;
 
 import java.util.*;
 

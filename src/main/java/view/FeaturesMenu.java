@@ -1,7 +1,7 @@
-package View;
+package view;
 
-import Controller.MetaGenerator;
-import View.printer.Printer;
+import controller.MetaGenerator;
+import view.printer.Printer;
 import java.util.Scanner;
 
 public class FeaturesMenu {

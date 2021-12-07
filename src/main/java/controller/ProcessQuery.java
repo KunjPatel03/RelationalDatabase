@@ -296,38 +296,7 @@ public class ProcessQuery {
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
-                final StringBuilder stringBuilder = new StringBuilder();
-                for (final String columnToken : columnNames) {
-                    final String[] tokens = columnToken.trim().split(" ");
-                    if (tokens.length == 2) {
-                        stringBuilder.append(tokens[0])
-                                .append("(").append(tokens[1])
-                                .append(")")
-                                .append("$||$");
-                    }
-                    if (tokens.length == 4 && tokens[2].equalsIgnoreCase("PRIMARY")) {
-                        stringBuilder.append(tokens[0])
-                                .append("(").append(tokens[1]).append("|")
-                                .append("PK")
-                                .append(")")
-                                .append("$||$");
-                    }
-                    if (tokens.length == 4 && tokens[2].equalsIgnoreCase("REFERENCES")) {
-                        final String foreignKeyTable = tokens[3].split("\\(")[0];
-                        String foreignKeyCol = tokens[3].split("\\(")[1]
-                                .replaceAll("\\)", "");
-                        stringBuilder.append(tokens[0]).append("(")
-                                .append(tokens[1]).append("|")
-                                .append("FK").append("|")
-                                .append(foreignKeyTable).append("|")
-                                .append(foreignKeyCol)
-                                .append(")")
-                                .append("$||$");
-                    }
-                }
-                stringBuilder.replace(stringBuilder.length()
-                        - "$||$".length(), stringBuilder.length(), "");
-                stringBuilder.append("\n");
+                final StringBuilder stringBuilder = getStringBuilder(columnNames);
                 fileWriter.append(stringBuilder.toString());
             }
             catch(Exception e){
@@ -335,6 +304,42 @@ public class ProcessQuery {
             }
         }
         return "TABLE HAS BEEN CREATED SUCCESSFULLY !!!";
+    }
+
+    private StringBuilder getStringBuilder(String[] columnNames) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        for (final String columnToken : columnNames) {
+            final String[] tokens = columnToken.trim().split(" ");
+            if (tokens.length == 2) {
+                stringBuilder.append(tokens[0])
+                        .append("(").append(tokens[1])
+                        .append(")")
+                        .append("$||$");
+            }
+            if (tokens.length == 4 && tokens[2].equalsIgnoreCase("PRIMARY")) {
+                stringBuilder.append(tokens[0])
+                        .append("(").append(tokens[1]).append("|")
+                        .append("PK")
+                        .append(")")
+                        .append("$||$");
+            }
+            if (tokens.length == 4 && tokens[2].equalsIgnoreCase("REFERENCES")) {
+                final String foreignKeyTable = tokens[3].split("\\(")[0];
+                String foreignKeyCol = tokens[3].split("\\(")[1]
+                        .replaceAll("\\)", "");
+                stringBuilder.append(tokens[0]).append("(")
+                        .append(tokens[1]).append("|")
+                        .append("FK").append("|")
+                        .append(foreignKeyTable).append("|")
+                        .append(foreignKeyCol)
+                        .append(")")
+                        .append("$||$");
+            }
+        }
+        stringBuilder.replace(stringBuilder.length()
+                - "$||$".length(), stringBuilder.length(), "");
+        stringBuilder.append("\n");
+        return stringBuilder;
     }
 
     private String executeInsertQuery(String query) throws Exception {
@@ -386,35 +391,7 @@ public class ProcessQuery {
                                 .replace("(", ""), temporaryTokens[1]
                                 .split("\\|")[0]);
                     }
-                    for (int i = 0; i < columnNamesExtracted.length; i++) {
-                        String[] temporaryTokens = columnNamesExtracted[i]
-                                .replace(")", "").split("\\(");
-                    }
-                    final StringBuilder stringBuilder = new StringBuilder();
-                    for (final String columnName : columnValue.keySet()) {
-                        final String columnDataType = columnDetails.get(columnName);
-                        final String column_value = columnValue.get(columnName);
-                        if (columnDataType.equalsIgnoreCase("INT")) {
-                            try {
-                                Integer.parseInt(column_value);
-                            } catch (final NumberFormatException e) {
-
-                            }
-                        }
-                        if (columnDataType.equalsIgnoreCase("FLOAT")) {
-                            try {
-                                Float.parseFloat(column_value);
-                            } catch (final NumberFormatException e) {
-
-                            }
-                        }
-                        if (columnDataType.equalsIgnoreCase("BOOLEAN")) {
-                            boolean value = Boolean.parseBoolean(column_value);
-                        }
-                        stringBuilder.append(column_value).append("$||$");
-                    }
-                    stringBuilder.replace(stringBuilder.length() - "$||$".length(),
-                            stringBuilder.length(), "");
+                    final StringBuilder stringBuilder = getStringBuilder(columnValue, columnDetails);
                     stringBuilder.append("\n");
                     fileWriter.append(stringBuilder.toString());
                     try (final BufferedReader bufferedReader1 = new BufferedReader(new
@@ -429,6 +406,36 @@ public class ProcessQuery {
             }
         }
         return "RECORD HAS BEEN INSERTED SUCCESSFULLY !!!";
+    }
+
+    private StringBuilder getStringBuilder(Map<String, String> columnValue,
+                                           LinkedHashMap<String, String> columnDetails) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        for (final String columnName : columnValue.keySet()) {
+            final String columnDataType = columnDetails.get(columnName);
+            final String column_value = columnValue.get(columnName);
+            if (columnDataType.equalsIgnoreCase("INT")) {
+                try {
+                    Integer.parseInt(column_value);
+                } catch (final NumberFormatException e) {
+
+                }
+            }
+            if (columnDataType.equalsIgnoreCase("FLOAT")) {
+                try {
+                    Float.parseFloat(column_value);
+                } catch (final NumberFormatException e) {
+
+                }
+            }
+            if (columnDataType.equalsIgnoreCase("BOOLEAN")) {
+                boolean value = Boolean.parseBoolean(column_value);
+            }
+            stringBuilder.append(column_value).append("$||$");
+        }
+        stringBuilder.replace(stringBuilder.length() - "$||$".length(),
+                stringBuilder.length(), "");
+        return stringBuilder;
     }
 
     private String executeSelectQuery(String query) throws Exception {

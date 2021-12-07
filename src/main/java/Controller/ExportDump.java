@@ -62,13 +62,13 @@ public class ExportDump {
                     }
                 }
 
+                outputBufferWriter.write(createTableQuery);
+                outputBufferWriter.newLine();
+
                 if(isDataPresent){
                     insertQuery = insertQuery.substring(0, insertQuery.length()-3) + ";";
                     outputBufferWriter.write(insertQuery);
                 }
-
-                outputBufferWriter.write(createTableQuery);
-                outputBufferWriter.newLine();
 
                 inputBufferReader.close();
                 outputBufferWriter.close();

@@ -4,9 +4,7 @@ import Controller.ExportDump;
 import View.printer.Printer;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class ExportDumpView {

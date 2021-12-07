@@ -3,6 +3,7 @@ package Controller;
 import View.printer.Printer;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class ExportDump {
     private File databaseToExport;
@@ -10,6 +11,7 @@ public class ExportDump {
     private File databaseDumpFolder;
     private File parentFolder;
     private Printer printer;
+    private String[] columnTypes;
 
     public ExportDump(File database, String destination, Printer print){
         this.databaseToExport = database;
@@ -26,37 +28,48 @@ public class ExportDump {
             }
             String[] schemas = databaseToExport.list();
             for (String schema : schemas){
+                String schemaName = schema.replaceAll("\\.txt", "");
                 File sourceSchemaFile = new File(databaseToExport, schema);
-                File destinationSchemaFile = new File(databaseDumpFolder, schema);
+                File destinationSchemaFile = new File(databaseDumpFolder, schemaName+".sql");
                 InputStream inputStream = new FileInputStream(sourceSchemaFile);
                 BufferedReader inputBufferReader = new BufferedReader(new InputStreamReader(inputStream));
                 OutputStream outputStream = new FileOutputStream(destinationSchemaFile);
                 BufferedWriter outputBufferWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
 
                 String line;
-                String insertQuery = "-----\n----- Dumping data for table `" + schema + "`\n" + "-----\nINSERT INTO `" + schema +"` VALUES (";
-                String createTableQuery = "";
+                String primaryKey = "PRIMARY KEY (`";
+                String insertQuery = "--\n-- Dumping data for table `" + schemaName + "`\n" + "--\n\nINSERT INTO `" + schemaName +"` VALUES (";
+                String createTableQuery = "CREATE TABLE `" + schemaName + "` ";
+                String dropTableQuery = "--\n-- Table structure for table `" + schemaName + "`\n--\n\n";
+                dropTableQuery += "DROP TABLE IF EXISTS `" + schemaName + "`;\n";
                 boolean readHeader = true;
+                boolean isDataPresent = false;
+
+                outputBufferWriter.write(dropTableQuery);
+                outputBufferWriter.newLine();
+
                 while ((line = inputBufferReader.readLine()) != null){
                     if(line.indexOf('$') != -1){
+                        line = line.replaceAll("\\$", "");
+                        String[] lineValues = line.split("\\|\\|");
                         if(readHeader){
+                            createTableQuery = getCreateQuery(lineValues, createTableQuery, primaryKey);
                             readHeader = false;
                         } else {
-                            String[] values = line.split("\\|\\|");
-                            for(int i = 0; i < values.length - 1; i++){
-                                values[i] = values[i].replaceAll("\\$", "");
-                                insertQuery += values[i];
-                                if(i < values.length-2){
-                                    insertQuery += ", ";
-                                }
-                            }
-                            insertQuery += "), (";
+                            isDataPresent = true;
+                            insertQuery = getInsertQuery(lineValues, insertQuery);
                         }
                     }
                 }
-                insertQuery = insertQuery.substring(0, insertQuery.length()-3) + ";";
-                outputBufferWriter.write(insertQuery);
+
+                if(isDataPresent){
+                    insertQuery = insertQuery.substring(0, insertQuery.length()-3) + ";";
+                    outputBufferWriter.write(insertQuery);
+                }
+
+                outputBufferWriter.write(createTableQuery);
                 outputBufferWriter.newLine();
+
                 inputBufferReader.close();
                 outputBufferWriter.close();
             }
@@ -65,5 +78,50 @@ public class ExportDump {
             printer.printString("Please enter correct path of the folder.");
             return false;
         }
+    }
+
+    public String getInsertQuery(String[] values, String insertQuery){
+        for(int i = 0; i < values.length; i++){
+            if(columnTypes[i].equals("TEXT")){
+                insertQuery += "'" + values[i] + "'";
+            } else{
+                insertQuery += values[i];
+            }
+            if(i < values.length-1){
+                insertQuery += ", ";
+            }
+        }
+        insertQuery += "), (";
+        return insertQuery;
+    }
+
+    public String getCreateQuery(String[] columns, String createTableQuery, String primaryKey){
+        createTableQuery += "(";
+        boolean isPrimaryKeyPresent = false;
+        columnTypes = new String[columns.length];
+
+        for(int i = 0; i < columns.length; i++){
+            int columnTypeStartIndex = columns[i].indexOf('(');
+            int columnTypeEndIndex = columns[i].indexOf(')');
+            String columnName = columns[i].substring(0, columnTypeStartIndex);
+            String columnType = columns[i].substring(columnTypeStartIndex + 1, columnTypeEndIndex);
+
+            if(columns[i].indexOf("PK") != -1){
+                primaryKey += columnName + "`)";
+                columnType = columnType.replaceAll("\\|PK", "");
+                isPrimaryKeyPresent = true;
+            }
+            columnTypes[i] = columnType;
+            createTableQuery += "`" +  columnName + "` " +  columnType;
+            if(i < columns.length-1){
+                createTableQuery+=", \n";
+            }
+        }
+        if(isPrimaryKeyPresent){
+            createTableQuery+= ",\n" + primaryKey + ");\n";
+        } else{
+            createTableQuery+= ");\n";
+        }
+        return createTableQuery;
     }
 }

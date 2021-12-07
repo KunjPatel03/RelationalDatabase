@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 public class GeneralLoggingController {
 
-    public static final String GeneralLogLocation = "./src/main/java/Logs/QueryLogs.txt";
+    public static final String GeneralLogLocation = "./src/main/java/Logs/GeneralLogs.txt";
 
     public void writeLog(String message, Long time) {
         try (FileWriter fileWriter = createFile(GeneralLogLocation)) {

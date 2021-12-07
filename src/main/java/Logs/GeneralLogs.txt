@@ -1,0 +1,2 @@
+Table students has 4 rows 2021-12-07 07:42:07.147
+Table student has 2 rows 2021-12-07 07:48:52.106

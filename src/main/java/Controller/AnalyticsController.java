@@ -16,6 +16,7 @@ public class AnalyticsController {
     private static final String COUNT_UPDATE_STRING =
             "^(?i)(COUNT\\sUPDATE\\s[a-zA-Z\\d]+;)$";
     private static int queryCount;
+    private static int updateCount;
 
     public String analytics(String query) throws Exception {
         String message = null;
@@ -56,8 +57,6 @@ public class AnalyticsController {
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains("|")) {
                     String dbNameFromLog = line.split("\\|")[2].trim().split(" ")[0];
-                    /*System.out.println(line.split("\\|").length);
-                    System.out.println(dbNameFromLog);*/
                     if (dbNameFromLog.equalsIgnoreCase(dbName)) {
                         ++queryCount;
                     }
@@ -77,13 +76,12 @@ public class AnalyticsController {
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains("|") && line.contains("UPDATE")) {
                     String dbNameFromLog = line.split("\\$")[1].trim().split(" ")[0];
-                    System.out.println(dbNameFromLog);
                     if (dbNameFromLog.equalsIgnoreCase(dbName)) {
-                        ++queryCount;
+                        ++updateCount;
                     }
                 }
             }
-            message = "Total " + queryCount + " Update operations are performed " + dbName;
+            message = "Total " + updateCount + " Update operations are performed " + dbName;
         }
         System.out.println(message);
         return "Analytics executed";

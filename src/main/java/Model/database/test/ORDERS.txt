@@ -1,0 +1,1 @@
+id(INT|PK)$||$name(TEXT)$||$personId(INT|FK|Person|id)

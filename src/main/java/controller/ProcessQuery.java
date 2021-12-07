@@ -275,7 +275,7 @@ public class ProcessQuery {
 
             }
         }
-        return this.databaseName + " HAS BEEN SELECTED SUCCESSFULLY !!!";
+        return dbName + " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
     private String executeCreateTableQuery(String query) throws Exception {
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
@@ -643,7 +643,7 @@ public class ProcessQuery {
             bw.write(String.valueOf(stringBuilder));
             bw.close();
         }
-        return "UPDATE QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
+        return "UPDATE QUERY HAS BEEN EXECUTED SUCCESSFULLY!!!";
     }
 
     private String executeDeleteWithConditionQuery(String query) throws Exception {
@@ -810,10 +810,10 @@ public class ProcessQuery {
             table.delete();
         }
         inMemoryDatabase.delete();
-        return "";
+        return "Rollback successful";
     }
 
-    public static void useDifferentPath(boolean isTransaction) {
+    private static void useDifferentPath(boolean isTransaction) {
         ProcessQuery.isTransaction = isTransaction;
         DBPATH = (isTransaction) ? inMemoryPath: path;
     }

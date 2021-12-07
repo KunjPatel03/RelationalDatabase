@@ -4,3 +4,9 @@ Table courses has 2 rows 2021-12-07 10:49:13.142
 Table courses has 3 rows 2021-12-07 10:49:44.362
 Table courses has 4 rows 2021-12-07 12:27:31.68
 Table courses has 5 rows 2021-12-07 12:58:59.442
+CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:19:54.511
+CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:20:07.649
+Table students has 1 rows 2021-12-07 16:21:01.397
+Table students has 2 rows 2021-12-07 16:21:19.559
+Table students has 0 rows 2021-12-07 16:43:04.948
+CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:50:33.889

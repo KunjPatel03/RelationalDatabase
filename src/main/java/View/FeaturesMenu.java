@@ -18,7 +18,8 @@ public class FeaturesMenu {
             printer.printString("1. Process SQL Queries");
             printer.printString("2. Generate Dump");
             printer.printString("3. Generate ERD");
-            printer.printString("4. Logout");
+            printer.printString("4. Analytics");
+            printer.printString("5. Logout");
             printer.printString("Select an option:");
             final String input = scanner.nextLine();
 
@@ -35,6 +36,10 @@ public class FeaturesMenu {
                     System.out.println("selected 3");
                     break;
                 case "4":
+                    AnalyticsView analyticsView = new AnalyticsView(scanner, printer);
+                    analyticsView.displayMenu();
+                    break;
+                case "5":
                     System.out.println("selected 4");
                     return;
                 default:

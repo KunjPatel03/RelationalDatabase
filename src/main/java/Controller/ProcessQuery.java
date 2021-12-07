@@ -5,7 +5,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -218,7 +217,7 @@ public class ProcessQuery {
     private String executeCreateDatabaseQuery(String query) throws IOException {
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
 
-        String message = CREATE_DATABASE+" - "+dbName+EXECUTED;
+        String message = CREATE_DATABASE+" || "+dbName+EXECUTED;
         generalLoggingController.writeLog(message, System.currentTimeMillis());
         String path =DBPATH+ dbName;
 
@@ -233,7 +232,7 @@ public class ProcessQuery {
         for (final File file : files) {
             if (file.getName().equalsIgnoreCase(dbName)) {
                 this.databaseName = file.getName();
-                String message = USE_DATABASE+" - "+this.databaseName+EXECUTED;
+                String message = USE_DATABASE+" || "+this.databaseName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
 
             }
@@ -256,7 +255,7 @@ public class ProcessQuery {
         if (matcher.find()) {
             final String[] columnNames = matcher.group().split(",");
             try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt")) {
-                String message = CREATE_TABLE+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+                String message = CREATE_TABLE+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
                 final StringBuilder createStringBuilder = new StringBuilder();
                 for (final String columnToken : columnNames) {
@@ -380,7 +379,7 @@ public class ProcessQuery {
     private String executeSelectQuery(String query) throws Exception {
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = queryArray[queryArray.length-1];
-        String message = SELECT_STATEMENT+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+        String message = SELECT_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
         generalLoggingController.writeLog(message, System.currentTimeMillis());
         String path = DBPATH+ this.databaseName;
 
@@ -435,7 +434,7 @@ public class ProcessQuery {
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("from")){
                 tableName = queryArray[i+1];
-                String message = SELECT_STATEMENT+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+                String message = SELECT_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
@@ -502,7 +501,7 @@ public class ProcessQuery {
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("update")){
                 tableName = queryArray[i+1];
-                String message = UPDATE_STATEMENT+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+                String message = UPDATE_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
@@ -588,7 +587,7 @@ public class ProcessQuery {
         for(int i =0; i<queryArray.length;i++){
             if(queryArray[i].equalsIgnoreCase("from")){
                 tableName = queryArray[i+1];
-                String message = DELETE_STATEMENT+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+                String message = DELETE_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
             }
             if(queryArray[i].equalsIgnoreCase("where")){
@@ -649,7 +648,7 @@ public class ProcessQuery {
     private String executeDropTableQuery(String query) throws Exception {
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
         String path =DBPATH+ this.databaseName;
-        String message = DROP_STATEMENT+" - "+this.databaseName+" -> "+tableName+EXECUTED;
+        String message = DROP_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
         generalLoggingController.writeLog(message, System.currentTimeMillis());
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){

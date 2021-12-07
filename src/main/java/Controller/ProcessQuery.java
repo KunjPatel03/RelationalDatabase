@@ -1,6 +1,9 @@
 package Controller;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -24,7 +27,7 @@ public class ProcessQuery {
             "use database";
     public static final String USE_DATABASE_QUERY_STRING =
             "^(?i)(USE\\sDATABASE\\s[a-zA-Z\\d]+;)$";
-    private String useDatabaseName= "";
+    private String databaseName = "";
     public static final String CREATE_TABLE_QUERY =
             "create table";
     public static final String USE_CREATE_TABLE_QUERY_STRING =
@@ -93,6 +96,22 @@ public class ProcessQuery {
 
    public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
 
+    public static final String TRANSACTION_TABLE_QUERY =
+            "start transaction";
+    public static final String START_TRANSACTION_QUERY_STRING =
+            "^(?i)START TRANSACTION;$";
+    public static final String COMMIT_TABLE_QUERY =
+            "commit";
+    public static final String COMMIT_QUERY_STRING =
+            "^(?i)COMMIT;$";
+    public static final String ROLLBACK_TABLE_QUERY =
+            "rollback";
+    public static final String ROLLBACK_QUERY_STRING =
+            "^(?i)ROLLBACK;$";
+    public static final String path = "./src/main/java/Model/database/";
+    public static final String inMemoryPath = "./src/main/java/Model/inMemory/";
+    public static boolean isTransaction = false;
+    public static String DBPATH = path;
     public String processorQuery(String query) throws Exception {
         String returnMessage = null;
         if(isQueryValid(query)){
@@ -122,6 +141,15 @@ public class ProcessQuery {
             }
             else if (Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, query)){
                 returnMessage = executeDeleteWithConditionQuery(query);
+            }
+            else if (Pattern.matches(START_TRANSACTION_QUERY_STRING, query)){
+                returnMessage = executeTransaction(query);
+            }
+            else if (Pattern.matches(COMMIT_QUERY_STRING, query)){
+                returnMessage = executeCommit(query);
+            }
+            else if (Pattern.matches(ROLLBACK_QUERY_STRING, query)){
+                returnMessage = executeRollBack(query);
             }
         }else{
             throw new Exception("Invalid query !!!!");
@@ -171,6 +199,21 @@ public class ProcessQuery {
                 throw new Exception("Invalid drop table query !!!!");
             }
         }
+        else if(Query.contains(TRANSACTION_TABLE_QUERY)){
+            if(!Pattern.matches(START_TRANSACTION_QUERY_STRING, Query)) {
+                throw new Exception("Invalid drop table query !!!!");
+            }
+        }
+        else if(Query.contains(COMMIT_TABLE_QUERY)){
+            if(!Pattern.matches(COMMIT_QUERY_STRING, Query)) {
+                throw new Exception("Invalid drop table query !!!!");
+            }
+        }
+        else if(Query.contains(ROLLBACK_TABLE_QUERY)){
+            if(!Pattern.matches(ROLLBACK_QUERY_STRING, Query)) {
+                throw new Exception("Invalid drop table query !!!!");
+            }
+        }
 
         return true;
     }
@@ -178,7 +221,7 @@ public class ProcessQuery {
         fileWriter.write(CREATE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
         System.out.println(dbName);
-        String path ="./src/main/java/Model/database/"+ dbName;
+        String path =DBPATH+ dbName;
         File databasePath = new File(path);
         databasePath.mkdirs();
         return "CREATED DB SUCCESSFULLY !!!";
@@ -187,23 +230,23 @@ public class ProcessQuery {
     private String executeUseDatabaseQuery(String query) throws IOException {
         fileWriter.write(USE_DATABASE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String dbName = query.substring(0,query.length()-1).split(" ")[2];
-        final File[] files = new File("./src/main/java/Model/database/").listFiles();
+        final File[] files = new File(DBPATH).listFiles();
         for (final File file : files) {
             if (file.getName().equalsIgnoreCase(dbName)) {
-                this.useDatabaseName = file.getName();
+                this.databaseName = file.getName();
             }
         }
-        return this.useDatabaseName+ " HAS BEEN SELECTED SUCCESSFULLY !!!";
+        return this.databaseName + " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
     private String executeCreateTableQuery(String query) throws Exception {
         fileWriter.write(CREATE_TABLE+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path = DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
 
@@ -255,12 +298,12 @@ public class ProcessQuery {
         fileWriter.write(INSERT_INTO+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
 //        System.out.println(tableName);
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path =DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         final Pattern pattern = Pattern.compile(INSERT_COLUMN_NAME_STRING);
@@ -331,12 +374,12 @@ public class ProcessQuery {
         fileWriter.write(SELECT_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String[] queryArray = query.substring(0,query.length()-1).split(" ");
         String tableName = queryArray[queryArray.length-1];
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path = DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         boolean isTableExists = false;
@@ -391,12 +434,12 @@ public class ProcessQuery {
             }
 
         }
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path =DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         boolean isTableExists = false;
@@ -461,12 +504,12 @@ public class ProcessQuery {
             }
         }
 
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path = DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         boolean isTableExists = false;
@@ -541,12 +584,12 @@ public class ProcessQuery {
             }
         }
 
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path ="./src/main/java/Model/database/"+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         boolean isTableExists = false;
@@ -594,12 +637,12 @@ public class ProcessQuery {
     private String executeDropTableQuery(String query) throws Exception {
         fileWriter.write(DROP_STATEMENT+EXECUTED+ new Timestamp(System.currentTimeMillis())+"\n");
         String tableName = query.substring(0,query.length()-1).split(" ")[2];
-        String path ="./src/main/java/Model/database/"+ this.useDatabaseName;
+        String path =DBPATH+ this.databaseName;
         File databasePath = new File(path);
         if(!databasePath.isDirectory()){
             throw new Exception("DATABASE doesn't exist");
         }
-        final String tablePath = "./src/main/java/Model/database/" + this.useDatabaseName + "/";
+        final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
         final File[] allTables = allTablesPath.listFiles();
         boolean isTableExists = false;
@@ -623,5 +666,74 @@ public class ProcessQuery {
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+    }
+
+    private String executeTransaction(String query) throws Exception {
+        final String tablePath = path + this.databaseName + "/";
+        final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
+        final File inMemoryDatabase = new File(inMemoryPath);
+        if (inMemoryDatabase.mkdirs()) {
+            final File dbFolder = new File(tablePath);
+            final File[] dbTables = dbFolder.listFiles();
+            for (final File table : dbTables) {
+                System.out.println(table);
+                final Path src = Paths.get(tablePath+ table.getName());
+                final Path dest = Paths.get(inMemoryPath+ table.getName());
+                try {
+                    Files.copy(src, dest);
+                } catch (final IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            useDifferentPath(true);
+        }
+
+        return "";
+    }
+    private String executeCommit(String query) throws Exception {
+        final String tablePath = DBPATH + this.databaseName + "/";
+        final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
+        final File inMemoryDatabase = new File(inMemoryPath);
+        final String inServerDatabasePath = path + "/" + this.databaseName + "/";
+        final File dbFolder = new File(inServerDatabasePath);
+        final File[] allTables = dbFolder.listFiles();
+        for (final File table : allTables) {
+            table.delete();
+        }
+        dbFolder.delete();
+        if (dbFolder.mkdirs()) {
+            final File[] inMemoryDatabaseTables = inMemoryDatabase.listFiles();
+            for (final File table : inMemoryDatabaseTables) {
+                final Path src = Paths.get(inMemoryPath + table.getName());
+                final Path dest = Paths.get(inServerDatabasePath + table.getName());
+                try {
+                    Files.copy(src, dest);
+                } catch (final IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            for (final File table : inMemoryDatabaseTables) {
+                table.delete();
+            }
+            inMemoryDatabase.delete();
+            useDifferentPath(false);
+        }
+        return "";
+    }
+
+    private String executeRollBack(String query) throws Exception {
+        final String inMemoryDatabasePath = DBPATH + this.databaseName;
+        final File inMemoryDatabase = new File(inMemoryDatabasePath);
+        final File[] allTables = inMemoryDatabase.listFiles();
+        for (final File table : allTables) {
+            table.delete();
+        }
+        inMemoryDatabase.delete();
+        return "";
+    }
+
+    public static void useDifferentPath(boolean isTransaction) {
+        ProcessQuery.isTransaction = isTransaction;
+        DBPATH = (isTransaction) ? inMemoryPath: path;
     }
 }

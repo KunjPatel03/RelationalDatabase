@@ -105,6 +105,12 @@ public class ProcessQuery {
             "rollback";
     public static final String ROLLBACK_QUERY_STRING =
             "^(?i)ROLLBACK;$";
+    public static final String DROP_TABLE_QUERY =
+            "drop database";
+    public static final String DROP_DATABASE_QUERY_STRING =
+            "^(?i)(DROP\\sDATABASE\\s[a-zA-Z\\d]+;)$";
+
+
     public static final String path = "./src/main/java/Model/database/";
     public static final String inMemoryPath = "./src/main/java/Model/inMemory/";
     public static boolean isTransaction = false;
@@ -147,6 +153,9 @@ public class ProcessQuery {
             }
             else if (Pattern.matches(ROLLBACK_QUERY_STRING, query)){
                 returnMessage = executeRollBack(query);
+            }
+            else if (Pattern.matches(DROP_DATABASE_QUERY_STRING, query)){
+                returnMessage = executeDropDatabaseQuery(query);
             }
         }else{
             throw new Exception("Invalid query !!!!");
@@ -211,7 +220,11 @@ public class ProcessQuery {
                 throw new Exception("Invalid drop table query !!!!");
             }
         }
-
+        else if(Query.contains(DROP_TABLE_QUERY)){
+            if(!Pattern.matches(DROP_DATABASE_QUERY_STRING, Query)) {
+                throw new Exception("Invalid drop table query !!!!");
+            }
+        }
         return true;
     }
     private String executeCreateDatabaseQuery(String query) throws IOException {
@@ -219,10 +232,12 @@ public class ProcessQuery {
 
         String message = CREATE_DATABASE+" || "+dbName+EXECUTED;
         generalLoggingController.writeLog(message, System.currentTimeMillis());
-        String path =DBPATH+ dbName;
+        String path = DBPATH + dbName;
 
         File databasePath = new File(path);
+        Lock.exclusiveLock(dbName,null);
         databasePath.mkdirs();
+        Lock.removeExclusiveLock(dbName,null);
         return "CREATED DB SUCCESSFULLY !!!";
     }
 
@@ -285,7 +300,8 @@ public class ProcessQuery {
                                 .append("$||$");
                     }
                 }
-                createStringBuilder.replace(createStringBuilder.length() - "$||$".length(), createStringBuilder.length(), "");
+                createStringBuilder.replace(createStringBuilder.length()
+                        - "$||$".length(), createStringBuilder.length(), "");
                 createStringBuilder.append("\n");
                 fileWriter.append(createStringBuilder.toString());
             }
@@ -747,5 +763,14 @@ public class ProcessQuery {
     public static void useDifferentPath(boolean isTransaction) {
         ProcessQuery.isTransaction = isTransaction;
         DBPATH = (isTransaction) ? inMemoryPath: path;
+    }
+
+    private String executeDropDatabaseQuery(String query) throws IOException {
+        String dbName = query.substring(0,query.length()-1).split(" ")[2];
+        final File[] allTables = new File(DBPATH+dbName).listFiles();
+        for (final File table : allTables) {
+            table.delete();
+        }
+        return dbName + " HAS BEEN DROPPED SUCCESSFULLY !!!";
     }
 }

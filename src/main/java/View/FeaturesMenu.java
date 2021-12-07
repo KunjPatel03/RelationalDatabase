@@ -47,7 +47,7 @@ public class FeaturesMenu {
                     String dbName = this.scanner.nextLine();
                     printer.printString("Enter the table name:");
                     String tableName = this.scanner.nextLine();
-                    metaGenerator.createMetaData(dbName,tableName);
+                    metaGenerator.generateMetaDataFile(dbName,tableName);
                     return;
                 case "6":
                     System.out.println("selected 6");

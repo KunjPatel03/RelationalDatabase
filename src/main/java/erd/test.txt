@@ -1,0 +1,32 @@
+courses
+PK | courseId INT
+courseName TEXT
+FK | id INT
+
+courses id => students id
+
+ORDERS
+PK | id INT
+name TEXT
+FK | personId INT
+
+ORDERS personId => Person id
+
+PERSON
+PK | id INT
+name TEXT
+email TEXT
+
+
+student
+PK | id INT
+name TEXT
+email TEXT
+
+
+students
+PK | id INT
+name TEXT
+email TEXT
+
+

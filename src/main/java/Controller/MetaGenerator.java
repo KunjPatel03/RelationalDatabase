@@ -4,8 +4,8 @@ import java.io.*;
 
 public class MetaGenerator {
 
-    public String createMetaData(final String databaseName,
-                                  final String tableName){
+    public String generateMetaDataFile(final String databaseName,
+                                       final String tableName){
         final StringBuilder stringBuilder = new StringBuilder();
         final String metaDataPath = "./src/main/java/metadata/"+databaseName +"/" ;
         final File metadataPath = new File(metaDataPath);

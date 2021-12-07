@@ -285,7 +285,8 @@ public class ProcessQuery {
                     }
                     if (tokens.length == 4 && tokens[2].equalsIgnoreCase("REFERENCES")) {
                         final String foreignKeyTable = tokens[3].split("\\(")[0];
-                        String foreignKeyCol = tokens[3].split("\\(")[1].replaceAll("\\)", "");
+                        String foreignKeyCol = tokens[3].split("\\(")[1]
+                                .replaceAll("\\)", "");
                         stringBuilder.append(tokens[0]).append("(")
                                 .append(tokens[1]).append("|")
                                 .append("FK").append("|")

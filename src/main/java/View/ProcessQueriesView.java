@@ -11,18 +11,8 @@ import java.util.Scanner;
 public class ProcessQueriesView {
     private Printer printer;
     private Scanner scanner;
-    private static FileWriter fileWriter;
 
-    static {
-        try {
-            fileWriter = new FileWriter("./src/main/java/Logs/QueryLogs.txt", true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private ProcessQuery processQuery = new ProcessQuery(fileWriter);
-
+    private ProcessQuery processQuery = new ProcessQuery();
 
     ProcessQueriesView(Scanner scanner, Printer print) throws IOException {
         this.printer = print;

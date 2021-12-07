@@ -1,0 +1,3 @@
+id(INT|PK)$||$name(TEXT)$||$email(TEXT)$||$
+1$||$Arjun$||$abc@gmail.com$||$
+2$||$abhi$||$abc@gmail.com$||$

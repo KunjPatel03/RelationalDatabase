@@ -1,0 +1,3 @@
+[Unlocked]
+id(INT|PK)$||$name(TEXT)$||$email(TEXT)$||$
+2$||$arjun$||$aml@gmail.com$||$

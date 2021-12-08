@@ -14,7 +14,7 @@ public class FeaturesMenu {
         this.scanner = scanner;
     }
 
-    public void displayMenu() throws Exception{
+    public void displayMenu() {
         while (true) {
             printer.printTitle("Main Menu");
             printer.printString("1. Process SQL Queries");
@@ -28,22 +28,39 @@ public class FeaturesMenu {
 
             switch (input) {
                 case "1":
-                    ProcessQueriesView processQueriesView = new ProcessQueriesView(scanner,printer);
-                    processQueriesView.displayMenu();
+                    try{
+                        ProcessQueriesView processQueriesView = new ProcessQueriesView(scanner,printer);
+                        processQueriesView.displayMenu();
+                    } catch (Exception e ){
+                        printer.printString(e.getMessage());
+                    }
+
                     break;
                 case "2":
+                    try{
                     ExportDumpView exportDumpView = new ExportDumpView(scanner, printer);
                     exportDumpView.displaySchemas();
+                     } catch (Exception e ){
+                        printer.printString(e.getMessage());
+                    }
                     break;
                 case "3":
-                    ErdGenerator erdGenerator = new ErdGenerator();
-                    printer.printString("Enter the database name:");
-                    String databaseName = this.scanner.nextLine();
-                    erdGenerator.generateERD(databaseName);
+                    try {
+                        ErdGenerator erdGenerator = new ErdGenerator();
+                        printer.printString("Enter the database name:");
+                        String databaseName = this.scanner.nextLine();
+                        erdGenerator.generateERD(databaseName);
+                    }catch (Exception e ){
+                        printer.printString(e.getMessage());
+                    }
                     break;
                 case "4":
-                    AnalyticsView analyticsView = new AnalyticsView(scanner, printer);
-                    analyticsView.displayMenu();
+                    try {
+                        AnalyticsView analyticsView = new AnalyticsView(scanner, printer);
+                        analyticsView.displayMenu();
+                    } catch (Exception e){
+                        printer.printString(e.getMessage());
+                    }
                     break;
                 case "5":
                     MetaGenerator metaGenerator = new MetaGenerator();

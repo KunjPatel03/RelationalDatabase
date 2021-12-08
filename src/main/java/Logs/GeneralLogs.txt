@@ -1,23 +1,8 @@
-Table students has 4 rows 2021-12-07 07:42:07.147
-Table student has 2 rows 2021-12-07 07:48:52.106
-Table courses has 2 rows 2021-12-07 10:49:13.142
-Table courses has 3 rows 2021-12-07 10:49:44.362
-Table courses has 4 rows 2021-12-07 12:27:31.68
-Table courses has 5 rows 2021-12-07 12:58:59.442
-CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:19:54.511
-CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:20:07.649
-Table students has 1 rows 2021-12-07 16:21:01.397
-Table students has 2 rows 2021-12-07 16:21:19.559
-Table students has 0 rows 2021-12-07 16:43:04.948
-CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 16:50:33.889
-CREATE TABLE  ||  |$ courses EXECUTED AT  2021-12-07 21:25:16.493
-CREATE TABLE  ||  |$ students EXECUTED AT  2021-12-07 21:35:11.364
-CREATE TABLE  ||  |$ teachers EXECUTED AT  2021-12-07 21:36:02.223
-CREATE TABLE  ||  |$ teachers EXECUTED AT  2021-12-07 21:37:36.256
-CREATE TABLE  || Students |$ teachers EXECUTED AT  2021-12-07 21:38:55.487
-Table teachers has 1 rows 2021-12-07 21:39:59.493
-Table teachers has 2 rows 2021-12-07 21:40:07.578
-Table teachers has 3 rows 2021-12-07 21:40:10.598
-CREATE TABLE  || SCHOOL |$ teachers EXECUTED AT  2021-12-07 21:53:24.96
-Table teachers has 1 rows 2021-12-07 21:53:32.97
-Table teachers has 2 rows 2021-12-07 21:53:37.945
+CREATE TABLE  || test |$ students EXECUTED AT  2021-12-08 03:09:03.747
+CREATE TABLE  || test |$ courses EXECUTED AT  2021-12-08 03:09:15.186
+Table students has 1 rows 2021-12-08 03:10:52.108
+Table students has 2 rows 2021-12-08 03:11:15.728
+Table courses has 1 rows 2021-12-08 03:11:39.344
+Table students has 1 rows 2021-12-08 03:13:24.287
+Table students has 2 rows 2021-12-08 03:14:03.192
+CREATE TABLE  ||  |$ courses EXECUTED AT  2021-12-08 03:18:43.714

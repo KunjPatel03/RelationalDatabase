@@ -10,12 +10,20 @@ public class Lock {
         NON_EXCLUSIVE,
         EXCLUSIVE
     }
-    public static void applyLock(String databaseName,String tableName){
+    public static void applyLock(String databaseName,String tableName) throws GenericException{
+
         String tablePath = databaseName + "." + tableName;
         LockType tableLockTypeApplied = Lock.Locks.get(tablePath);
+        if (tableLockTypeApplied != null) {
+            throw new GenericException("Database " + databaseName + " locked!");
+        }
         if(tableLockTypeApplied==null){
             Lock.Locks.put(tablePath,LockType.NON_EXCLUSIVE);
             Lock.count++;
+        }
+        if (tableLockTypeApplied == Lock.LockType.EXCLUSIVE) {
+            throw new GenericException("Operations cannot be performed on table "
+                    + tableName + " as it is used by another user!");
         }
         if(tableLockTypeApplied == LockType.NON_EXCLUSIVE){
             Lock.count++;
@@ -29,11 +37,13 @@ public class Lock {
             Lock.Locks.remove(tablePath);
         }
     }
-    public static void exclusiveLock(String databaseName,String tableName){
+    public static void exclusiveLock(String databaseName,String tableName) throws GenericException{
         String tablePath = databaseName + "." + tableName;
         LockType tableLockTypeApplied = Lock.Locks.get(tablePath);
         if (tableLockTypeApplied == null) {
             Lock.Locks.put(tablePath, Lock.LockType.EXCLUSIVE);
+        }else{
+            throw new GenericException("Database " + databaseName + " locked!");
         }
     }
 

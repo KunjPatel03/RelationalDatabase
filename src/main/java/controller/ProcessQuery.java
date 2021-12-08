@@ -11,16 +11,19 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class ProcessQuery {
 
     private static GeneralLoggingController generalLoggingController = null;
     private static EventLoggingController eventLoggingController = null;
     private static QueryLoggingController queryLoggingController = null;
+    private static MetaGenerator metaGenerator = null;
     public ProcessQuery() {
         this.generalLoggingController = new GeneralLoggingController();
         this.eventLoggingController = new EventLoggingController();
         this.queryLoggingController = new QueryLoggingController();
         queryLoggingController.writeLog("QUERY PROCESSOR INVOKED/STARTED AT ", System.currentTimeMillis());
+        metaGenerator = new MetaGenerator();
     }
 
     public static final String CREATE_DATABASE_QUERY =
@@ -73,30 +76,30 @@ public class ProcessQuery {
     public static final String TRUNCATE_TABLE_QUERY_STRING =
             "^(?i)(TRUNCATE\\sTABLE\\s[a-zA-Z\\d]+;)$";
 
-   public static final String DELETE_TABLE_QUERY=
-           "delete";
-   public static final String DELETEWITHCONDITION_QUERY_SYNTAX=
-           "^(?i)(DELETE\\s.*FROM\\s.*WHERE\\s.*)$";
+    public static final String DELETE_TABLE_QUERY =
+            "delete";
+    public static final String DELETEWITHCONDITION_QUERY_SYNTAX =
+            "^(?i)(DELETE\\s.*FROM\\s.*WHERE\\s.*)$";
 
-   public static final String CREATE_DATABASE = "CREATE DATABASE ";
+    public static final String CREATE_DATABASE = "CREATE DATABASE ";
 
-   public static final String USE_DATABASE = "USE DATABASE ";
+    public static final String USE_DATABASE = "USE DATABASE ";
 
-   public static final String CREATE_TABLE = "CREATE TABLE ";
+    public static final String CREATE_TABLE = "CREATE TABLE ";
 
-   public static final String INSERT_INTO = "INSERTING VALUES ";
+    public static final String INSERT_INTO = "INSERTING VALUES ";
 
-   public static final String SELECT_STATEMENT = "SELECT STATEMENT ";
+    public static final String SELECT_STATEMENT = "SELECT STATEMENT ";
 
-   public static final String UPDATE_STATEMENT = "UPDATE STATEMENT ";
+    public static final String UPDATE_STATEMENT = "UPDATE STATEMENT ";
 
-   public static final String DELETE_STATEMENT = "DELETE STATEMENT ";
+    public static final String DELETE_STATEMENT = "DELETE STATEMENT ";
 
-   public static final String DROP_STATEMENT = "DROP STATEMENT ";
+    public static final String DROP_STATEMENT = "DROP STATEMENT ";
 
-   public static final String EXECUTED = " EXECUTED AT ";
+    public static final String EXECUTED = " EXECUTED AT ";
 
-   public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
+    public static final String PROGRAM_EXIT = "EXITING QUERY PROCESSOR AT ";
 
     public static final String TRANSACTION_TABLE_QUERY =
             "start transaction";
@@ -120,156 +123,139 @@ public class ProcessQuery {
     public static final String inMemoryPath = "./src/main/java/Model/inMemory/";
     public static boolean isTransaction = false;
     public static String DBPATH = path;
-    public String processorQuery(String query) throws Exception {
+
+    public String processorQuery(String query) throws GenericException {
         String returnMessage = null;
-        if(isQueryValid(query)){
-            if(Pattern.matches(CREATE_DATABASE_QUERY_STRING, query)) {
+        if (isQueryValid(query)) {
+            if (Pattern.matches(CREATE_DATABASE_QUERY_STRING, query)) {
                 returnMessage = executeCreateDatabaseQuery(query);
-            }
-            else if (Pattern.matches(USE_DATABASE_QUERY_STRING, query)){
+            } else if (Pattern.matches(USE_DATABASE_QUERY_STRING, query)) {
                 returnMessage = executeUseDatabaseQuery(query);
-            }
-            else if (Pattern.matches(USE_CREATE_TABLE_QUERY_STRING, query)){
+            } else if (Pattern.matches(USE_CREATE_TABLE_QUERY_STRING, query)) {
                 returnMessage = executeCreateTableQuery(query);
-            }
-            else if (Pattern.matches(INSERT_QUERY_SYNTAX, query)){
+            } else if (Pattern.matches(INSERT_QUERY_SYNTAX, query)) {
                 returnMessage = executeInsertQuery(query);
-            }
-            else if (Pattern.matches(SELECT_QUERY_SYNTAX, query)){
+            } else if (Pattern.matches(SELECT_QUERY_SYNTAX, query)) {
                 returnMessage = executeSelectQuery(query);
-            }
-            else if (Pattern.matches(SELECTWITHCONDITION_QUERY_SYNTAX, query)){
+            } else if (Pattern.matches(SELECTWITHCONDITION_QUERY_SYNTAX, query)) {
                 returnMessage = executeSelectWithConditionQuery(query);
-            }
-            else if (Pattern.matches(UPDATEWITHCONDITION_QUERY_SYNTAX, query)){
+            } else if (Pattern.matches(UPDATEWITHCONDITION_QUERY_SYNTAX, query)) {
                 returnMessage = executeUpdateWithConditionQuery(query);
-            }
-            else if (Pattern.matches(TRUNCATE_TABLE_QUERY_STRING, query)){
+            } else if (Pattern.matches(TRUNCATE_TABLE_QUERY_STRING, query)) {
                 returnMessage = executeDropTableQuery(query);
-            }
-            else if (Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, query)){
+            } else if (Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, query)) {
                 returnMessage = executeDeleteWithConditionQuery(query);
-            }
-            else if (Pattern.matches(START_TRANSACTION_QUERY_STRING, query)){
+            } else if (Pattern.matches(START_TRANSACTION_QUERY_STRING, query)) {
                 returnMessage = executeTransaction(query);
-            }
-            else if (Pattern.matches(COMMIT_QUERY_STRING, query)){
+            } else if (Pattern.matches(COMMIT_QUERY_STRING, query)) {
                 returnMessage = executeCommit(query);
-            }
-            else if (Pattern.matches(ROLLBACK_QUERY_STRING, query)){
+            } else if (Pattern.matches(ROLLBACK_QUERY_STRING, query)) {
                 returnMessage = executeRollBack(query);
-            }
-            else if (Pattern.matches(DROP_DATABASE_QUERY_STRING, query)){
+            } else if (Pattern.matches(DROP_DATABASE_QUERY_STRING, query)) {
                 returnMessage = executeDropDatabaseQuery(query);
             }
-        }else{
+        } else {
             returnMessage = "Invalid query from user";
             eventLoggingController.writeLog(returnMessage, System.currentTimeMillis());
-            throw new Exception("Invalid query !!!!");
+            throw new GenericException("Invalid query !!!!");
         }
-       return returnMessage;
+        return returnMessage;
     }
-    private Boolean isQueryValid(String query) throws Exception {
+
+    private Boolean isQueryValid(String query) throws GenericException {
         final String Query = query.trim().toLowerCase();
         if (Query.contains(CREATE_DATABASE_QUERY)) {
-            if(!Pattern.matches(CREATE_DATABASE_QUERY_STRING, Query)){
+            if (!Pattern.matches(CREATE_DATABASE_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid CREATE DATABASE query !!!!");
+                throw new GenericException("Invalid CREATE DATABASE query !!!!");
             }
-        }else if(Query.contains(USE_DATABASE_QUERY)){
-            if(!Pattern.matches(USE_DATABASE_QUERY_STRING, Query)){
+        } else if (Query.contains(USE_DATABASE_QUERY)) {
+            if (!Pattern.matches(USE_DATABASE_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid USE DATABASE query !!!!");
+                throw new GenericException("Invalid USE DATABASE query !!!!");
             }
-        }
-        else if(Query.contains(CREATE_TABLE_QUERY)){
-            if(!Pattern.matches(USE_CREATE_TABLE_QUERY_STRING, Query)){
+        } else if (Query.contains(CREATE_TABLE_QUERY)) {
+            if (!Pattern.matches(USE_CREATE_TABLE_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid create table query !!!!");
+                throw new GenericException("Invalid create table query !!!!");
             }
-        }
-        else if(Query.contains(INSERT_QUERY)){
-            if(!Pattern.matches(INSERT_QUERY_SYNTAX, Query)){
+        } else if (Query.contains(INSERT_QUERY)) {
+            if (!Pattern.matches(INSERT_QUERY_SYNTAX, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid insert query !!!!");
+                throw new GenericException("Invalid insert query !!!!");
             }
-        }
-        else if(Query.contains(SELECT_QUERY)){
+        } else if (Query.contains(SELECT_QUERY)) {
             return true;
-        }
-        else if(Query.contains(UPDATE_QUERY)){
-            if(!Pattern.matches(UPDATEWITHCONDITION_QUERY_SYNTAX, Query)){
+        } else if (Query.contains(UPDATE_QUERY)) {
+            if (!Pattern.matches(UPDATEWITHCONDITION_QUERY_SYNTAX, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid update query !!!!");
+                throw new GenericException("Invalid update query !!!!");
             }
-        }else if(Query.contains(TRUNCATE_TABLE_QUERY)){
-            if(!Pattern.matches(TRUNCATE_TABLE_QUERY_STRING, Query)) {
+        } else if (Query.contains(TRUNCATE_TABLE_QUERY)) {
+            if (!Pattern.matches(TRUNCATE_TABLE_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new GenericException("Invalid drop table query !!!!");
             }
-        }else if(Query.contains(DELETE_TABLE_QUERY)){
-            if(!Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, Query)) {
+        } else if (Query.contains(DELETE_TABLE_QUERY)) {
+            if (!Pattern.matches(DELETEWITHCONDITION_QUERY_SYNTAX, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new GenericException("Invalid drop table query !!!!");
             }
-        }
-        else if(Query.contains(TRANSACTION_TABLE_QUERY)){
-            if(!Pattern.matches(START_TRANSACTION_QUERY_STRING, Query)) {
+        } else if (Query.contains(TRANSACTION_TABLE_QUERY)) {
+            if (!Pattern.matches(START_TRANSACTION_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid transaction query !!!!");
+                throw new GenericException("Invalid transaction query !!!!");
             }
-        }
-        else if(Query.contains(COMMIT_TABLE_QUERY)){
-            if(!Pattern.matches(COMMIT_QUERY_STRING, Query)) {
+        } else if (Query.contains(COMMIT_TABLE_QUERY)) {
+            if (!Pattern.matches(COMMIT_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid commit table query !!!!");
+                throw new GenericException("Invalid commit table query !!!!");
             }
-        }
-        else if(Query.contains(ROLLBACK_TABLE_QUERY)){
-            if(!Pattern.matches(ROLLBACK_QUERY_STRING, Query)) {
+        } else if (Query.contains(ROLLBACK_TABLE_QUERY)) {
+            if (!Pattern.matches(ROLLBACK_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid rollback query !!!!");
+                throw new GenericException("Invalid rollback query !!!!");
             }
-        }
-        else if(Query.contains(DROP_TABLE_QUERY)){
-            if(!Pattern.matches(DROP_DATABASE_QUERY_STRING, Query)) {
+        } else if (Query.contains(DROP_TABLE_QUERY)) {
+            if (!Pattern.matches(DROP_DATABASE_QUERY_STRING, Query)) {
                 String message = "Invalid query from user";
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
-                throw new Exception("Invalid drop table query !!!!");
+                throw new GenericException("Invalid drop table query !!!!");
             }
         }
         return true;
     }
-    private String executeCreateDatabaseQuery(String query) throws IOException {
-        String dbName = query.substring(0,query.length()-1).split(" ")[2];
-        String message = CREATE_DATABASE+" || "+dbName+EXECUTED;
+
+    private String executeCreateDatabaseQuery(String query) throws GenericException {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
+        String message = CREATE_DATABASE + " || " + dbName + EXECUTED;
         queryLoggingController.writeLog(message, System.currentTimeMillis());
         eventLoggingController.writeLog(message, System.currentTimeMillis());
         String path = DBPATH + dbName;
         File databasePath = new File(path);
-        Lock.exclusiveLock(dbName,null);
+        Lock.exclusiveLock(dbName, null);
         databasePath.mkdirs();
-        Lock.removeExclusiveLock(dbName,null);
+        Lock.removeExclusiveLock(dbName, null);
         return "CREATED DB SUCCESSFULLY !!!";
     }
 
-    private String executeUseDatabaseQuery(String query) throws IOException {
-        String dbName = query.substring(0,query.length()-1).split(" ")[2];
+    private String executeUseDatabaseQuery(String query) throws GenericException {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
         final File[] files = new File(DBPATH).listFiles();
         for (final File file : files) {
             if (file.getName().equalsIgnoreCase(dbName)) {
                 this.databaseName = file.getName();
-                String message = USE_DATABASE+" || "+this.databaseName+EXECUTED;
+                String message = USE_DATABASE + " || " + this.databaseName + EXECUTED;
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
 
@@ -277,12 +263,14 @@ public class ProcessQuery {
         }
         return dbName + " HAS BEEN SELECTED SUCCESSFULLY !!!";
     }
-    private String executeCreateTableQuery(String query) throws Exception {
-        String tableName = query.substring(0,query.length()-1).split(" ")[2];
-        String path = DBPATH+ this.databaseName;
+
+    private String executeCreateTableQuery(String query) throws GenericException {
+        String tableName = query.substring(0, query.length() - 1).split(" ")[2];
+        Lock.exclusiveLock(this.databaseName,tableName);
+        String path = DBPATH + this.databaseName;
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -292,18 +280,20 @@ public class ProcessQuery {
         final Matcher matcher = pattern.matcher(query);
         if (matcher.find()) {
             final String[] columnNames = matcher.group().split(",");
-            try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt")) {
-                String message = CREATE_TABLE+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+            try (final FileWriter fileWriter = new FileWriter(tablePath + tableName + ".txt")) {
+                String message = CREATE_TABLE + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
                 generalLoggingController.writeLog(message, System.currentTimeMillis());
                 final StringBuilder stringBuilder = getStringBuilder(columnNames);
                 fileWriter.append(stringBuilder.toString());
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
+                Lock.removeExclusiveLock(this.databaseName,tableName);
             }
         }
+        Lock.removeExclusiveLock(this.databaseName,tableName);
+        metaGenerator.generateMetaDataFile(this.databaseName,tableName);
         return "TABLE HAS BEEN CREATED SUCCESSFULLY !!!";
     }
 
@@ -343,15 +333,17 @@ public class ProcessQuery {
         return stringBuilder;
     }
 
-    private String executeInsertQuery(String query) throws Exception {
-        String tableName = query.substring(0,query.length()-1).split(" ")[2];
-        String path =DBPATH+ this.databaseName;
-        String message = INSERT_INTO+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+    private String executeInsertQuery(String query) throws GenericException {
+        String tableName = query.substring(0, query.length() - 1).split(" ")[2];
+        Lock.exclusiveLock(this.databaseName,tableName);
+        String path = DBPATH + this.databaseName;
+        String message = INSERT_INTO + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
         queryLoggingController.writeLog(message, System.currentTimeMillis());
         eventLoggingController.writeLog(message, System.currentTimeMillis());
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -361,7 +353,7 @@ public class ProcessQuery {
         final Pattern pattern1 = Pattern.compile(INSERT_VALUES_STRING);
         int rowCount = 0;
         final Matcher valuesMatcher = pattern1.matcher(query);
-        if(insertMatcher.find()){
+        if (insertMatcher.find()) {
             final String ColumnNames = insertMatcher.group();
             final String[] columnNamesArray = ColumnNames
                     .replace(")", "").split(",");
@@ -376,10 +368,10 @@ public class ProcessQuery {
                 for (int i = 0; i < numberOfColumns; i++) {
                     columnValue.put(columnNamesArray[i].trim(), columnValues[i].trim());
                 }
-                try (final FileWriter fileWriter = new FileWriter(tablePath+tableName+".txt"
+                try (final FileWriter fileWriter = new FileWriter(tablePath + tableName + ".txt"
                         , true);
                      final BufferedReader bufferedReader = new BufferedReader(new
-                             FileReader(tablePath+tableName+".txt"))) {
+                             FileReader(tablePath + tableName + ".txt"))) {
 
                     final String columnNamesFromFile = bufferedReader.readLine();
                     final String[] columnNamesExtracted = columnNamesFromFile
@@ -396,16 +388,29 @@ public class ProcessQuery {
                     stringBuilder.append("\n");
                     fileWriter.append(stringBuilder.toString());
                     try (final BufferedReader bufferedReader1 = new BufferedReader(new
-                            FileReader(tablePath+tableName+".txt"))) {
-                        while(bufferedReader1.readLine()!=null) {
+                            FileReader(tablePath + tableName + ".txt"))) {
+                        while (bufferedReader1.readLine() != null) {
                             ++rowCount;
                         }
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                        Lock.removeExclusiveLock(this.databaseName,tableName);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Lock.removeExclusiveLock(this.databaseName,tableName);
                     }
-                    String messageGeneralLog = "Table "+tableName+" has "+rowCount+" rows";
+                    String messageGeneralLog = "Table " + tableName + " has " + rowCount + " rows";
                     generalLoggingController.writeLog(messageGeneralLog, System.currentTimeMillis());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    Lock.removeExclusiveLock(this.databaseName,tableName);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Lock.removeExclusiveLock(this.databaseName,tableName);
                 }
             }
         }
+        Lock.removeExclusiveLock(this.databaseName,tableName);
         return "RECORD HAS BEEN INSERTED SUCCESSFULLY !!!";
     }
 
@@ -439,17 +444,17 @@ public class ProcessQuery {
         return stringBuilder;
     }
 
-    private String executeSelectQuery(String query) throws Exception {
-        String[] queryArray = query.substring(0,query.length()-1).split(" ");
-        String tableName = queryArray[queryArray.length-1];
-        String message = SELECT_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+    private String executeSelectQuery(String query) throws GenericException {
+        String[] queryArray = query.substring(0, query.length() - 1).split(" ");
+        String tableName = queryArray[queryArray.length - 1];
+        String message = SELECT_STATEMENT + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
         queryLoggingController.writeLog(message, System.currentTimeMillis());
         eventLoggingController.writeLog(message, System.currentTimeMillis());
-        String path = DBPATH+ this.databaseName;
+        String path = DBPATH + this.databaseName;
 
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         System.out.println(tablePath);
@@ -462,7 +467,7 @@ public class ProcessQuery {
             }
         }
         if (!isTableExists) {
-            throw new Exception("Table doesn't exists");
+            throw new GenericException("Table doesn't exists");
         }
         final String FullPath = tablePath + tableName + ".txt";
         try (final FileReader fileReader = new FileReader(FullPath);
@@ -487,32 +492,37 @@ public class ProcessQuery {
                 }
             }
             System.out.println(stringBuilder);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
-    private String executeSelectWithConditionQuery(String query) throws Exception {
-        String[] queryArray = query.substring(0,query.length()-1).split(" ");
-        int from_index=0;
+
+    private String executeSelectWithConditionQuery(String query) throws GenericException {
+        String[] queryArray = query.substring(0, query.length() - 1).split(" ");
+        int from_index = 0;
         String tableName = "";
         String colName = "";
         String value = "";
-        for(int i =0; i<queryArray.length;i++){
-            if(queryArray[i].equalsIgnoreCase("from")){
-                tableName = queryArray[i+1];
-                String message = SELECT_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+        for (int i = 0; i < queryArray.length; i++) {
+            if (queryArray[i].equalsIgnoreCase("from")) {
+                tableName = queryArray[i + 1];
+                String message = SELECT_STATEMENT + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
             }
-            if(queryArray[i].equalsIgnoreCase("where")){
-                colName = queryArray[i+1];
-                value = queryArray[i+3];
+            if (queryArray[i].equalsIgnoreCase("where")) {
+                colName = queryArray[i + 1];
+                value = queryArray[i + 3];
             }
 
         }
-        String path =DBPATH+ this.databaseName;
+        String path = DBPATH + this.databaseName;
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -524,7 +534,7 @@ public class ProcessQuery {
             }
         }
         if (!isTableExists) {
-            throw new Exception("Table doesn't exists");
+            throw new GenericException("Table doesn't exists");
         }
         final String FullPath = tablePath + tableName + ".txt";
         try (final FileReader fileReader = new FileReader(FullPath);
@@ -542,9 +552,9 @@ public class ProcessQuery {
                     isHeading = false;
                 } else {
                     boolean contains = Arrays.stream(columns).anyMatch(value::equals);
-                    if(contains){
+                    if (contains) {
                         for (final String column : columns) {
-                                stringBuilder.append(column).append(" | ");
+                            stringBuilder.append(column).append(" | ");
                         }
                         stringBuilder.append("\n");
                         break;
@@ -552,38 +562,45 @@ public class ProcessQuery {
                 }
             }
             System.out.println(stringBuilder);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return "QUERY HAS BEEN SELECTED SUCCESSFULLY!!!";
     }
-    private String executeUpdateWithConditionQuery(String query) throws Exception {
-        String[] queryArray = query.substring(0,query.length()-1).split(" ");
+
+    private String executeUpdateWithConditionQuery(String query) throws GenericException {
+        String[] queryArray = query.substring(0, query.length() - 1).split(" ");
         String tableName = "";
         String colName = "";
         String value = "";
         String updateName = "";
         String updateValue = "";
         int colIndex = 0;
-        for(int i =0; i<queryArray.length;i++){
-            if(queryArray[i].equalsIgnoreCase("update")){
-                tableName = queryArray[i+1];
-                String message = UPDATE_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+        for (int i = 0; i < queryArray.length; i++) {
+            if (queryArray[i].equalsIgnoreCase("update")) {
+                tableName = queryArray[i + 1];
+                String message = UPDATE_STATEMENT + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
             }
-            if(queryArray[i].equalsIgnoreCase("where")){
-                colName = queryArray[i+1];
-                value = queryArray[i+3];
+            if (queryArray[i].equalsIgnoreCase("where")) {
+                colName = queryArray[i + 1];
+                value = queryArray[i + 3];
             }
-            if(queryArray[i].equalsIgnoreCase("set")){
-                updateName = queryArray[i+1];
-                updateValue = queryArray[i+3];
+            if (queryArray[i].equalsIgnoreCase("set")) {
+                updateName = queryArray[i + 1];
+                updateValue = queryArray[i + 3];
             }
         }
-
-        String path = DBPATH+ this.databaseName;
+        Lock.exclusiveLock(this.databaseName,tableName);
+        String path = DBPATH + this.databaseName;
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            throw new GenericException("DATABASE doesn't exist");
+
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -595,7 +612,8 @@ public class ProcessQuery {
             }
         }
         if (!isTableExists) {
-            throw new Exception("Table doesn't exists");
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            throw new GenericException("Table doesn't exists");
         }
         final String FullPath = tablePath + tableName + ".txt";
         try (final FileReader fileReader = new FileReader(FullPath);
@@ -610,7 +628,7 @@ public class ProcessQuery {
                 if (isHeading) {
                     for (final String column : columns) {
 
-                        if(column.split("\\(")[0].equalsIgnoreCase(updateName)){
+                        if (column.split("\\(")[0].equalsIgnoreCase(updateName)) {
                             colIndex = index;
                         }
                         stringBuilder.append(column).append("$||$");
@@ -621,14 +639,14 @@ public class ProcessQuery {
                 } else {
                     boolean contains = Arrays.stream(columns).anyMatch(value::equals);
 
-                    if(contains){
+                    if (contains) {
                         columns[colIndex] = updateValue;
                         for (final String column : columns) {
                             stringBuilder.append(column).append("$||$");
                         }
                         stringBuilder.append("\n");
 
-                    }else{
+                    } else {
                         for (final String column : columns) {
                             stringBuilder.append(column).append("$||$");
                         }
@@ -642,31 +660,39 @@ public class ProcessQuery {
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(String.valueOf(stringBuilder));
             bw.close();
+        } catch (FileNotFoundException e) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            e.printStackTrace();
+        } catch (IOException e) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            e.printStackTrace();
         }
+        Lock.removeExclusiveLock(this.databaseName,tableName);
         return "UPDATE QUERY HAS BEEN EXECUTED SUCCESSFULLY!!!";
     }
 
-    private String executeDeleteWithConditionQuery(String query) throws Exception {
-        String[] queryArray = query.substring(0,query.length()-1).split(" ");
+    private String executeDeleteWithConditionQuery(String query) throws GenericException {
+        String[] queryArray = query.substring(0, query.length() - 1).split(" ");
         String tableName = "";
         String value = "";
         int rowCount = 0;
-        for(int i =0; i<queryArray.length;i++){
-            if(queryArray[i].equalsIgnoreCase("from")){
-                tableName = queryArray[i+1];
-                String message = DELETE_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+        for (int i = 0; i < queryArray.length; i++) {
+            if (queryArray[i].equalsIgnoreCase("from")) {
+                tableName = queryArray[i + 1];
+                String message = DELETE_STATEMENT + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
                 queryLoggingController.writeLog(message, System.currentTimeMillis());
                 eventLoggingController.writeLog(message, System.currentTimeMillis());
             }
-            if(queryArray[i].equalsIgnoreCase("where")){
-                value = queryArray[i+3];
+            if (queryArray[i].equalsIgnoreCase("where")) {
+                value = queryArray[i + 3];
             }
         }
-
-        String path ="./src/main/java/Model/database/"+ this.databaseName;
+        Lock.exclusiveLock(this.databaseName,tableName);
+        String path = "./src/main/java/Model/database/" + this.databaseName;
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -678,7 +704,8 @@ public class ProcessQuery {
             }
         }
         if (!isTableExists) {
-            throw new Exception("Table doesn't exists");
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            throw new GenericException("Table doesn't exists");
         }
         final String FullPath = tablePath + tableName + ".txt";
         try (final FileReader fileReader = new FileReader(FullPath);
@@ -696,7 +723,7 @@ public class ProcessQuery {
                     isHeading = false;
                 } else {
                     boolean contains = Arrays.stream(columns).anyMatch(value::equals);
-                    if(!contains){
+                    if (!contains) {
                         for (final String column : columns) {
                             stringBuilder.append(column).append("$||$");
                         }
@@ -711,26 +738,34 @@ public class ProcessQuery {
             bw.write(String.valueOf(stringBuilder));
             bw.close();
             try (final BufferedReader bufferedReader1 = new BufferedReader(new
-                    FileReader(tablePath+tableName+".txt"))) {
-                while(bufferedReader1.readLine()!=null) {
+                    FileReader(tablePath + tableName + ".txt"))) {
+                while (bufferedReader1.readLine() != null) {
                     ++rowCount;
                 }
             }
             --rowCount;
-            String messageGeneralLog = "Table "+tableName+" has "+rowCount+" rows";
+            String messageGeneralLog = "Table " + tableName + " has " + rowCount + " rows";
             generalLoggingController.writeLog(messageGeneralLog, System.currentTimeMillis());
+        } catch (FileNotFoundException e) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            e.printStackTrace();
+        } catch (IOException e) {
+            Lock.removeExclusiveLock(this.databaseName,tableName);
+            e.printStackTrace();
         }
+        Lock.removeExclusiveLock(this.databaseName,tableName);
         return "DELETE QUERY HAS BEEN EXECUTED SUCCESSFULLY!!!";
     }
-    private String executeDropTableQuery(String query) throws Exception {
-        String tableName = query.substring(0,query.length()-1).split(" ")[2];
-        String path =DBPATH+ this.databaseName;
-        String message = DROP_STATEMENT+" || "+this.databaseName+" |$ "+tableName+EXECUTED;
+
+    private String executeDropTableQuery(String query) throws GenericException {
+        String tableName = query.substring(0, query.length() - 1).split(" ")[2];
+        String path = DBPATH + this.databaseName;
+        String message = DROP_STATEMENT + " || " + this.databaseName + " |$ " + tableName + EXECUTED;
         queryLoggingController.writeLog(message, System.currentTimeMillis());
         eventLoggingController.writeLog(message, System.currentTimeMillis());
         File databasePath = new File(path);
-        if(!databasePath.isDirectory()){
-            throw new Exception("DATABASE doesn't exist");
+        if (!databasePath.isDirectory()) {
+            throw new GenericException("DATABASE doesn't exist");
         }
         final String tablePath = DBPATH + this.databaseName + "/";
         final File allTablesPath = new File(tablePath);
@@ -743,23 +778,23 @@ public class ProcessQuery {
             }
         }
         if (!isTableExists) {
-            throw new Exception("Table doesn't exists");
+            throw new GenericException("Table doesn't exists");
         }
         return "TABLE HAS BEEN DROPPED SUCCESSFULLY!!!";
     }
 
 
-    private String executeTransaction(String query) throws Exception {
+    private String executeTransaction(String query) throws GenericException {
         final String tablePath = path + this.databaseName + "/";
         final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
         final File inMemoryDatabase = new File(inMemoryPath);
-        if (inMemoryDatabase.mkdirs()||inMemoryDatabase.exists()) {
+        if (inMemoryDatabase.mkdirs() || inMemoryDatabase.exists()) {
             final File dbFolder = new File(tablePath);
             final File[] dbTables = dbFolder.listFiles();
             for (final File table : dbTables) {
 //                System.out.println(table);
-                final Path source = Paths.get(tablePath+ table.getName());
-                final Path destination = Paths.get(inMemoryPath+ table.getName());
+                final Path source = Paths.get(tablePath + table.getName());
+                final Path destination = Paths.get(inMemoryPath + table.getName());
                 try {
                     Files.copy(source, destination);
                 } catch (final IOException e) {
@@ -771,7 +806,8 @@ public class ProcessQuery {
 
         return "Started transaction";
     }
-    private String executeCommit(String query) throws Exception {
+
+    private String executeCommit(String query) throws GenericException {
         final String tablePath = DBPATH + this.databaseName + "/";
         final String inMemoryPath = "./src/main/java/Model/inMemory/" + this.databaseName + "/";
         final File newInMemoryDatabase = new File(inMemoryPath);
@@ -782,7 +818,7 @@ public class ProcessQuery {
             table.delete();
         }
         dbFolder.delete();
-        if (dbFolder.mkdirs()||dbFolder.exists()) {
+        if (dbFolder.mkdirs() || dbFolder.exists()) {
             final File[] Tables = newInMemoryDatabase.listFiles();
             for (final File table : Tables) {
                 final Path source = Paths.get(inMemoryPath + table.getName());
@@ -802,7 +838,7 @@ public class ProcessQuery {
         return "Committed transaction";
     }
 
-    private String executeRollBack(String query) throws Exception {
+    private String executeRollBack(String query) throws GenericException {
         final String inMemoryDatabasePath = DBPATH + this.databaseName;
         final File inMemoryDatabase = new File(inMemoryDatabasePath);
         final File[] allTables = inMemoryDatabase.listFiles();
@@ -815,22 +851,22 @@ public class ProcessQuery {
 
     private static void useDifferentPath(boolean isTransaction) {
         ProcessQuery.isTransaction = isTransaction;
-        DBPATH = (isTransaction) ? inMemoryPath: path;
+        DBPATH = (isTransaction) ? inMemoryPath : path;
     }
 
-    private String executeDropDatabaseQuery(String query) throws IOException {
-        String dbName = query.substring(0,query.length()-1).split(" ")[2];
-        final File[] allTables = new File(DBPATH+dbName).listFiles();
+    private String executeDropDatabaseQuery(String query) throws GenericException {
+        String dbName = query.substring(0, query.length() - 1).split(" ")[2];
+        final File[] allTables = new File(DBPATH + dbName).listFiles();
         for (final File table : allTables) {
             table.delete();
         }
-        File directory = new File(DBPATH+dbName);
+        File directory = new File(DBPATH + dbName);
         directory.delete();
         return dbName + " HAS BEEN DROPPED SUCCESSFULLY !!!";
     }
 
 
-    public void closeFileWriter()  {
+    public void closeFileWriter() {
         try {
             queryLoggingController.writeLog(PROGRAM_EXIT, System.currentTimeMillis());
             queryLoggingController.createFile(QueryLoggingController.queryLogLocation).close();

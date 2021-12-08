@@ -1,0 +1,12 @@
+students
+PK | id INT
+name TEXT
+email TEXT
+
+
+students
+PK | id INT
+name TEXT
+email TEXT
+
+

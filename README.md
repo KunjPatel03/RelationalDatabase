@@ -9,7 +9,7 @@
 	* [Tirth Patel]
 	* [Kunj Patel]
 * Project Features:
-   * Login with 
+   * Login with security questions 
    * Query Processor (For processing Queries)
    * Meta Data Generator
    * SQL Dump Export
